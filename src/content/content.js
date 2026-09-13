@@ -1,7 +1,10 @@
 import { sendMessage, ext } from '../common/browser.js';
 import { loadSettings } from '../common/settings.js';
 import { extractBets, isFootball } from './extract.js';
-import { renderStats, renderError, renderLoading, clearFrom, clearAll, HOST_CLASS } from './render.js';
+import {
+  renderStats, renderError, renderLoading, clearFrom, clearAll,
+  markBadge, clearBadge, HOST_CLASS, MARKER_CLASS,
+} from './render.js';
 
 let settings = null;
 let timer = null;
@@ -19,9 +22,10 @@ function candidates(bets) {
 async function tick() {
   if (running || !settings?.enabled) return;
   running = true;
+  let live = [];
   try {
     const bets = extractBets();
-    const live = candidates(bets);
+    live = candidates(bets);
     log(`${bets.length} selection(s), ${live.length} to look up`, live.map((b) => `${b.home} - ${b.away}`));
 
     // Drop strips from rows that are no longer candidates (bet settled, tab
@@ -29,24 +33,38 @@ async function tick() {
     const keep = new Set(live.map((b) => b.anchor));
     for (const anchor of lastAnchors) if (!keep.has(anchor)) clearFrom(anchor);
     lastAnchors = keep;
+    for (const b of bets) if (!keep.has(b.anchor)) clearBadge(b.badge);
 
     if (!live.length) return;
-    for (const b of live) renderLoading(b.anchor);
+    for (const b of live) {
+      renderLoading(b.anchor);
+      markBadge(b.badge, 'loading');
+    }
 
     const payload = live.map(({ key, home, away, league }) => ({ key, home, away, league }));
     const res = await sendMessage({ type: 'GET_STATS', bets: payload });
 
     if (res?.error) {
-      for (const b of live) renderError(b.anchor, res.error);
+      for (const b of live) {
+        renderError(b.anchor, res.error);
+        markBadge(b.badge, 'error', res.error);
+      }
       return;
     }
     for (const b of live) {
       const data = res.results?.[b.key];
       const detail = data?.fixtureId != null ? res.details?.[data.fixtureId] : null;
       renderStats(b.anchor, data, detail, settings, b);
+      markBadge(b.badge, data?.state === 'live' ? 'available' : 'unavailable');
     }
   } catch (e) {
+    // Surface failures on the page. A silent catch here is indistinguishable
+    // from the extension not running at all.
     log('tick failed', e);
+    for (const b of live) {
+      renderError(b.anchor, e.message);
+      markBadge(b.badge, 'error', e.message);
+    }
   } finally {
     running = false;
   }
@@ -65,9 +83,11 @@ let debounce = null;
 const observer = new MutationObserver((records) => {
   const ours = records.every((r) => {
     const t = r.target;
-    if (t.nodeType === 1 && (t.classList?.contains(HOST_CLASS) || t.closest?.('.' + HOST_CLASS))) return true;
+    const ownClass = (n) => n.nodeType === 1
+      && (n.classList?.contains(HOST_CLASS) || n.classList?.contains(MARKER_CLASS));
+    if (t.nodeType === 1 && (ownClass(t) || t.closest?.(`.${HOST_CLASS}, .${MARKER_CLASS}`))) return true;
     const nodes = [...r.addedNodes, ...r.removedNodes];
-    return nodes.length > 0 && nodes.every((n) => n.nodeType === 1 && n.classList?.contains(HOST_CLASS));
+    return nodes.length > 0 && nodes.every(ownClass);
   });
   if (ours) return;
   clearTimeout(debounce);
@@ -84,7 +104,12 @@ async function start() {
 
 ext.storage.onChanged.addListener(async () => {
   settings = await loadSettings();
-  if (!settings.enabled) { clearInterval(timer); clearAll(); lastAnchors = new Set(); return; }
+  if (!settings.enabled) {
+    clearInterval(timer);
+    clearAll();
+    lastAnchors = new Set();
+    return;
+  }
   schedule();
   tick();
 });

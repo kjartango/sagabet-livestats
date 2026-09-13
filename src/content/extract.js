@@ -52,7 +52,7 @@ function textLeaves(root) {
   const out = [];
   for (const node of root.querySelectorAll('*')) {
     if (node.children.length) continue;
-    if (node.closest('.sagabet-livestats-host')) continue;
+    if (node.closest('[class^="sagabet-livestats"]')) continue;
     const t = text(node);
     if (t) out.push({ node, text: t });
   }
@@ -87,6 +87,21 @@ function findWidget(selection) {
   // Guard against picking up a widget belonging to a neighbouring selection.
   if (!widget || widget.closest(SELECTORS.selection)) return null;
   return widget;
+}
+
+/**
+ * epicbet's own "Í beinni" / "In play" badge, so we can mark it with whether
+ * the stats provider has this match. It sits immediately before the odds in the
+ * selection's right-hand column — found by position rather than by its text, so
+ * the site's language doesn't matter.
+ */
+function findLiveBadge(selection, leaves) {
+  for (let i = leaves.length - 1; i >= 0; i -= 1) {
+    if (!/^\d+[.,]\d+$/.test(leaves[i].text)) continue;
+    const prev = leaves[i].node.previousElementSibling;
+    return prev && text(prev) ? prev : null;
+  }
+  return null;
 }
 
 /** Pull the fixture out of one selection. */
@@ -128,6 +143,7 @@ function parseSelection(selection) {
     league,
     pick: leaves[0]?.text || '',
     market: leaves[1]?.text || '',
+    badge: findLiveBadge(selection, leaves),
   };
 }
 

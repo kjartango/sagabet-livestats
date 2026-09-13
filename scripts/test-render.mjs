@@ -23,7 +23,7 @@ const html = readFileSync('samples/fixtures/bets.html', 'utf8');
 const { document } = parseHTML(html);
 globalThis.document = document;
 
-const { renderStats, setExpanded } = await import('../src/content/render.js');
+const { renderStats, setExpanded, markBadge, MARKER_CLASS } = await import('../src/content/render.js');
 const provider = await import('../src/background/sofascore.js');
 
 const bet = extractBets().find((b) => b.live);
@@ -64,3 +64,38 @@ for (const open of [false, true]) {
   }
   console.log();
 }
+
+// ---------------------------------------------------------------------------
+// A lookup that finds nothing must say so, and mark epicbet's own live badge.
+console.log('--- no match found ---');
+renderStats(bet.anchor, {
+  state: 'no-live-match',
+  provider: 'sofascore',
+  providerLabel: 'SofaScore',
+  searched: 137,
+  closest: { home: 'Vancouver Whitecaps', away: 'Austin FC', league: 'MLS', score: 0.41 },
+}, null, settings, bet);
+markBadge(bet.badge, 'unavailable');
+
+const shadow = [...bet.anchor.children].find((c) => c.className === 'sagabet-livestats-host').shadowRoot;
+const chips = [...shadow.querySelectorAll('.chips .chip')].map((c) => c.textContent.replace(/\s+/g, ' ').trim());
+console.log('chips: ' + chips.join('  |  '));
+const mark = [...bet.badge.children].find((c) => c.className === MARKER_CLASS);
+console.log(`badge: "${bet.badge.textContent.trim()}"  (marker ${JSON.stringify(mark?.textContent)}, title: ${JSON.stringify(mark?.title)})`);
+
+let failed = 0;
+const check = (label, ok) => { if (!ok) failed += 1; console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${label}`); };
+console.log();
+check('a failed lookup renders a strip instead of vanishing', chips.length > 0);
+check('it says stats are unavailable', chips.some((c) => /No live stats/i.test(c)));
+check('it names the closest fixture', chips.some((c) => /Vancouver Whitecaps/.test(c)));
+check('it reports how many were searched', chips.some((c) => /137/.test(c)));
+check('epicbet\'s live badge is marked', mark?.textContent === '✕');
+
+markBadge(bet.badge, 'available');
+check('the marker flips to available without duplicating', 
+  bet.badge.querySelectorAll(`.${MARKER_CLASS}`).length === 1
+  && [...bet.badge.children].find((c) => c.className === MARKER_CLASS).textContent === '✓');
+
+console.log(failed ? `\n${failed} failing` : '\nall passing');
+process.exit(failed ? 1 : 0);

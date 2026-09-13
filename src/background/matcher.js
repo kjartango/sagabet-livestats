@@ -104,9 +104,15 @@ const THRESHOLD = 0.62;
 
 /**
  * Find the fixture for a scraped bet.
- * @param {{home:string, away:string}} bet
- * @param {Array} fixtures normalized fixtures from api-football.js
- * @returns {{fixture:Object, swapped:boolean, score:number}|null}
+ *
+ * Always returns the closest candidate, with `matched` saying whether it
+ * cleared the threshold. A near-miss is the single most useful thing to show
+ * when a lookup fails — it turns "no stats" into "it thinks your match might be
+ * this one, at 58%".
+ *
+ * @param {{home:string, away:string, league?:string}} bet
+ * @param {Array} fixtures normalized fixtures from a connector
+ * @returns {{fixture:Object, swapped:boolean, score:number, matched:boolean}|null}
  */
 export function matchFixture(bet, fixtures) {
   let best = null;
@@ -130,6 +136,6 @@ export function matchFixture(bet, fixtures) {
       best = { fixture: fx, swapped: swapped > direct, score: Math.min(score, 1) };
     }
   }
-  if (!best || best.score < THRESHOLD) return null;
-  return best;
+  if (!best) return null;
+  return { ...best, matched: best.score >= THRESHOLD };
 }

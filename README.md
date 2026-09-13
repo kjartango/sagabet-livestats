@@ -23,6 +23,15 @@ The leading chip appears when the bet is on a totals market — *Match Total Sho
 *Total Corners* — and shows the combined count so far against your line, which is the
 number the bet actually turns on.
 
+epicbet's own **Í beinni** / in-play badge gets a marker showing whether the provider has
+this match — **✓** available, **✕** not in its live list, **⋯** looking up, **!** provider
+unreachable. When a lookup finds nothing the strip says so and names the closest fixture it
+considered, rather than silently disappearing:
+
+```
+No live stats for this match │ closest Vancouver Whitecaps v Austin FC · 41% │ SofaScore · 137 live searched
+```
+
 Click **Players ▼** for the per-player table, with 🟨/🟥 beside anyone booked:
 
 ```

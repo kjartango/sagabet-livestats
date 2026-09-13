@@ -6,6 +6,42 @@
 import { PLAYER_SHORT, PLAYER_LABELS, TEAM_LABELS } from '../background/stat-keys.js';
 
 export const HOST_CLASS = 'sagabet-livestats-host';
+export const MARKER_CLASS = 'sagabet-livestats-mark';
+
+// Marks epicbet's own "Í beinni" / "In play" badge with whether the stats
+// provider actually has this match, so the answer is visible at a glance
+// without reading the strip.
+const MARKS = {
+  loading: { symbol: '⋯', color: 'inherit', title: 'Looking up live stats…' },
+  available: { symbol: '✓', color: 'var(--palette-primary-main, #B6EA00)', title: 'Live stats available for this match' },
+  unavailable: { symbol: '✕', color: 'var(--palette-negative-light, #ffb4a9)', title: 'This match was not found in the stats provider\u2019s live list' },
+  error: { symbol: '!', color: 'var(--palette-negative-light, #ffb4a9)', title: 'Could not reach the stats provider' },
+};
+
+/**
+ * Add or update the marker on epicbet's live badge. The badge belongs to the
+ * site, so the marker is a single appended span with inline styles — React may
+ * wipe it on re-render, and the next poll simply puts it back.
+ */
+export function markBadge(badge, state, title = '') {
+  if (!badge) return;
+  const spec = MARKS[state];
+  if (!spec) return;
+  let mark = [...badge.children].find((c) => c.className === MARKER_CLASS);
+  if (!mark) {
+    mark = document.createElement('span');
+    mark.className = MARKER_CLASS;
+    badge.appendChild(mark);
+  }
+  if (mark.textContent !== spec.symbol) mark.textContent = spec.symbol;
+  mark.title = title || spec.title;
+  mark.style.cssText = `margin-left:5px;font-weight:700;color:${spec.color};`;
+}
+
+export function clearBadge(badge) {
+  if (!badge) return;
+  for (const c of [...badge.children]) if (c.className === MARKER_CLASS) c.remove();
+}
 
 // Which bets have their player table open. Survives repaints; not persisted.
 const expanded = new Set();
@@ -227,9 +263,33 @@ function paint(anchor, html) {
   if (wrap.innerHTML !== html) wrap.innerHTML = html;
 }
 
-/** Render one bet's stats. Removes the strip when there's nothing to show. */
+/** Render one bet's stats, or an explanation of why there are none. */
 export function renderStats(anchor, data, detail, settings, bet) {
-  if (!data || data.state !== 'live') {
+  if (!data) {
+    clearFrom(anchor);
+    return;
+  }
+
+  // A lookup that found nothing is reported, not hidden. Silently removing the
+  // strip is indistinguishable from the extension being broken.
+  if (data.state === 'no-live-match') {
+    const bits = [chip('', 'No live stats for this match', 'muted')];
+    if (data.closest) {
+      const pct = Math.round(data.closest.score * 100);
+      bits.push(chip(
+        'closest',
+        `${data.closest.home} v ${data.closest.away} · ${pct}%`,
+        'muted',
+        `Nearest fixture in ${data.providerLabel}'s live list, too different to be trusted as a match`
+        + (data.closest.league ? ` — ${data.closest.league}` : ''),
+      ));
+    }
+    bits.push(chip('', `${data.providerLabel || 'provider'} · ${data.searched ?? 0} live searched`, 'teams'));
+    paint(anchor, `<div class="chips">${bits.join('')}</div>`);
+    return;
+  }
+
+  if (data.state !== 'live') {
     clearFrom(anchor);
     return;
   }
@@ -287,5 +347,5 @@ export function clearFrom(anchor) {
 }
 
 export function clearAll() {
-  document.querySelectorAll('.' + HOST_CLASS).forEach((el) => el.remove());
+  document.querySelectorAll(`.${HOST_CLASS}, .${MARKER_CLASS}`).forEach((el) => el.remove());
 }

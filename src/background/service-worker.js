@@ -65,8 +65,20 @@ async function getStatsFor(bets) {
 
   for (const bet of bets) {
     const m = matchFixture(bet, fixtures);
-    if (!m) {
-      results[bet.key] = { state: 'no-live-match' };
+    if (!m || !m.matched) {
+      results[bet.key] = {
+        state: 'no-live-match',
+        provider: provider.id,
+        providerLabel: provider.label,
+        searched: fixtures.length,
+        // The closest thing the provider had, so a failure is diagnosable.
+        closest: m ? {
+          home: m.fixture.home.name,
+          away: m.fixture.away.name,
+          league: m.fixture.league?.name || '',
+          score: Number(m.score.toFixed(2)),
+        } : null,
+      };
       continue;
     }
     const fx = m.fixture;

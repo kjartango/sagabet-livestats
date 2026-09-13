@@ -20,10 +20,10 @@ const cases = [
 let failed = 0;
 for (const [bet, expected] of cases) {
   const m = matchFixture(bet, fixtures);
-  const got = m ? m.fixture.id : null;
+  const got = m?.matched ? m.fixture.id : null;
   const ok = got === expected;
   if (!ok) failed += 1;
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${bet.home} v ${bet.away} -> ${got}${ok ? '' : ` (expected ${expected})`}${m ? ` @${m.score.toFixed(2)}` : ''}`);
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${bet.home} v ${bet.away} -> ${got}${ok ? '' : ` (expected ${expected})`}${m ? ` @${m.score.toFixed(2)}${m.matched ? '' : ' (below threshold)'}` : ''}`);
 }
 console.log(failed ? `\n${failed} failing` : '\nall passing');
 process.exit(failed ? 1 : 0);
