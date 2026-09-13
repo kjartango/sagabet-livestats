@@ -1,126 +1,163 @@
 # SagaBet Live Stats
 
-A browser extension that adds live match statistics to the **My bets** view on epicbet —
-team totals *and* per-player numbers, right under each selection.
+Live match statistics on your **epicbet** bet slip — shots, corners, cards, possession, and
+a full per-player breakdown — right under each selection.
 
-Works with no API key, no account and no quota — or with your own licensed key if you
-prefer. Chrome, Firefox (incl. Zen), and Safari.
+![The extension running on epicbet](docs/screenshot-firefox.png)
 
-> **Not affiliated with epicbet, SofaScore or FotMob.** This is an independent, unofficial
-> tool that runs in your own browser. See [Data sources](#data-sources) before you rely on it.
+> Not affiliated with epicbet, SofaScore or FotMob. An independent, open-source tool that
+> runs in your own browser. Free, no account, no ads, no tracking.
 
 ---
 
-## What it looks like
+## What it adds
 
-Under a selection whose match is in play:
-
-```
-Shots 19/32.5 │ ● 73' │ 0–0 │ Shots 18–1 │ On target 6–0 │ Corners 11–0 │ Fouls 5–3 │ Players 22 ▼
-```
-
-The leading chip appears when the bet is on a totals market — *Match Total Shots*,
-*Total Corners* — and shows the combined count so far against your line, which is the
-number the bet actually turns on.
-
-epicbet's own **Í beinni** / in-play badge gets a marker showing whether the provider has
-this match — **✓** available, **✕** not in its live list, **⋯** looking up, **!** provider
-unreachable. When a lookup finds nothing the strip says so and names the closest fixture it
-considered, rather than silently disappearing:
+Under every bet on a match that's currently being played, you get a strip like this:
 
 ```
-No live stats for this match │ closest Vancouver Whitecaps v Austin FC · 41% │ SofaScore · 137 live searched
+● 66' │ 1–2 │ Shots 7–4 │ On target 4–2 │ Corners 2–0 │ Fouls 10–8 │ Cards 1–2 │ Possession 52%–48% │ Players 26 ▼
 ```
 
-Click **Players ▼** for the per-player table, with 🟨/🟥 beside anyone booked:
+- If your bet is a **totals** bet ("over 5.5 corners", "match total shots"), the first chip
+  shows the running count against your line — `Corners 3 / 5.5`.
+- **Players ▼** opens a table of every player on the pitch: shots, shots on target, fouls,
+  rating, and a 🟨/🟥 next to anyone booked.
+- epicbet's own **Í beinni** badge gets a **✓** when stats are available for that match, or
+  a **✕** when the provider doesn't have it.
+- 22 team stats and 17 player stats are available; you choose which ones show.
 
-```
-  Northport                Sh   SoT   Fls   Rtg
-  5  E. Pulgar              3     0     2   7.3
-  10 G. de Arrascaeta       3     0     0   6.4
-  16 S. Lino                3     2     0   6.5
-```
-
-**22 team stats:** shots, on/off target, blocked, inside/outside box, woodwork, xG, big
-chances, corners, possession, passes, touches in box, offsides, fouls, yellow, red,
-tackles, interceptions, clearances, saves, duels won.
-
-**17 player stats:** shots, on/off target, blocked, goals, assists, xG, fouls, fouled,
-tackles, interceptions, offsides, saves, key passes, touches, minutes, rating.
-
-All of them are toggleable in the settings.
+It only does anything on matches that are actually in play.
 
 ---
 
 ## Install
 
-You need [Node.js](https://nodejs.org) to build. There is no bundler and no runtime
-dependency — the build just copies `src/` and writes a per-browser manifest.
+Pick your browser. **You do not need to be a programmer** — there's a ready-made file to
+download for Firefox and Chrome.
+
+> **Why isn't this in the Chrome/Firefox store?** Store listings for gambling-related
+> extensions are a slow and uncertain process. Installing from a file works exactly the
+> same, it just takes two extra clicks.
+
+### 🦊 Firefox, Zen, LibreWolf or Waterfox
+
+**1.** Download **`sagabet-livestats-firefox-mv2.xpi`** from the
+[latest release](../../releases/latest).
+
+**2.** Allow your browser to install add-ons that aren't from Mozilla's store:
+
+   - Type `about:config` in the address bar and press Enter
+   - Click **Accept the Risk and Continue**
+   - In the search box at the top, paste: `xpinstall.signatures.required`
+   - Double-click the row that appears so the value changes from `true` to **`false`**
+
+   *(This works in Zen, LibreWolf and Waterfox. Standard Firefox blocks it — see
+   [Firefox users](#standard-firefox) below.)*
+
+**3.** Install it:
+
+   - Type `about:addons` in the address bar and press Enter
+   - Click the **gear icon** ⚙ near the top right
+   - Choose **Install Add-on From File…**
+   - Pick the `.xpi` file you downloaded
+   - Click **Add** when asked
+
+**4.** Go to epicbet, open **My bets**, and look at a bet on a match being played right now.
+
+#### Standard Firefox
+
+Regular Firefox refuses unsigned add-ons and has no override. Use
+`about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → pick the `.xpi`. It
+works immediately but is removed when you close Firefox, so it's fine for trying out and
+annoying for daily use. Zen doesn't have this limitation.
+
+### 🌐 Chrome, Edge, Brave or Opera
+
+**1.** Download **`sagabet-livestats-chrome.zip`** from the
+[latest release](../../releases/latest).
+
+**2.** **Unzip it.** Right-click the file → *Extract All* (Windows) or double-click it
+(Mac). You'll get a folder called `sagabet-livestats-chrome`. **Keep this folder** — don't
+delete it after installing, Chrome loads the extension from it every time it starts. Put it
+somewhere permanent like your Documents folder.
+
+**3.** Type `chrome://extensions` in the address bar and press Enter.
+
+**4.** Turn on **Developer mode** — the switch in the **top-right corner**.
+
+**5.** Click **Load unpacked** — the button that appears in the top-left.
+
+**6.** Select the **folder** you unzipped. Select the folder itself; don't go inside it and
+pick a file.
+
+**7.** Go to epicbet, open **My bets**, and look at a bet on a match being played now.
+
+Chrome will show a "Disable developer mode extensions" warning each time it starts. That's
+normal for any extension installed from a file; you can dismiss it.
+
+### 🧭 Safari
+
+**Safari is genuinely difficult and needs a Mac with Xcode installed** — Apple requires
+every Safari extension to be wrapped in an app. There's no download-and-click option. If
+you're comfortable with a terminal:
 
 ```bash
-git clone https://github.com/<you>/sagabet-livestats.git
+git clone https://github.com/<your-username>/sagabet-livestats.git
 cd sagabet-livestats
-npm run build
-```
-
-That produces `dist/chrome`, `dist/firefox`, `dist/firefox-mv2`, `dist/safari`, and two
-`.xpi` files.
-
-### Chrome (also Edge, Brave, Opera)
-
-1. Open **`chrome://extensions`**
-2. Enable **Developer mode** (top right)
-3. **Load unpacked** → select the **`dist/chrome`** folder
-
-Pin it from the puzzle-piece menu. That's it — open a live bet on epicbet.
-
-### Firefox, Zen, LibreWolf, Waterfox
-
-Use **`dist/firefox-mv2`**. Firefox's MV3 makes host permissions opt-in, so the MV3 build
-installs happily and then fetches nothing until you grant them by hand; MV2 grants them at
-install, and Firefox supports MV2.
-
-**To try it (removed when the browser restarts):**
-
-1. **`about:debugging#/runtime/this-firefox`**
-2. **Load Temporary Add-on…**
-3. Select **`dist/firefox-mv2/manifest.json`**
-
-**To install permanently**, Gecko wants the extension signed. Either:
-
-- **Disable the check** — works in Zen and several other forks, *not* in release Firefox:
-  `about:config` → `xpinstall.signatures.required` → `false`, then `about:addons` → gear →
-  **Install Add-on From File…** → `dist/sagabet-livestats-firefox-mv2.xpi`
-- **Get it signed, free** — upload the `.xpi` at
-  [addons.mozilla.org/developers](https://addons.mozilla.org/developers/) as an **unlisted**
-  add-on (stays private, isn't published), download the signed file, install that.
-
-If you prefer the MV3 build, install `dist/sagabet-livestats-firefox.xpi` and then grant
-host permissions manually: `about:addons` → the extension → **Permissions** → allow
-`epicbet.com`, `api.sofascore.com` and `www.fotmob.com`.
-
-### Safari
-
-Safari extensions must be wrapped in a macOS app bundle, so this step **requires a Mac with
-Xcode** — it cannot be done on Linux or Windows.
-
-```bash
 npm run build:safari
 xcrun safari-web-extension-converter dist/safari --project-location safari/ --macos-only
 open "safari/SagaBet Live Stats/SagaBet Live Stats.xcodeproj"
 ```
 
-Build and run in Xcode, then in Safari enable **Settings → Advanced → Show features for web
-developers**, and **Settings → Developer → Allow unsigned extensions**. Finally tick the
-extension under **Settings → Extensions** and grant it access to epicbet.
+Build and run it in Xcode. Then in Safari: **Settings → Advanced →** tick *Show features for
+web developers*, **Settings → Developer →** tick *Allow unsigned extensions*, and finally
+**Settings → Extensions →** enable it and allow access to epicbet.
 
 ---
 
-## Using it
+## Is this safe to install?
 
-Open epicbet → **My bets** → **Opið**, on a match that is in play. Nothing to configure.
+Fair question — you're installing something that can read a page with your bets on it.
 
-Click the toolbar icon for settings:
+- **All the code is here.** Nothing is minified or obfuscated; it's a few hundred lines of
+  plain JavaScript you or anyone can read.
+- **It sends nothing about you anywhere.** No analytics, no tracking, no server, no account.
+  Your settings live in your own browser.
+- **What it actually does:** reads the team names in your bet slip, asks a public football
+  stats service for that match, and draws the numbers on the page.
+- **The permissions it asks for:** access to `epicbet.com` (to read the bet slip and draw on
+  it) and to the two stats providers (to look matches up). That's all of them.
+- **It never places, changes or cancels bets**, and it can't — it only reads and displays.
+
+---
+
+## Troubleshooting
+
+**Nothing appears under my bet.**
+The match has to be *in play right now*. epicbet shows a running clock like `66'` on those.
+Bets on matches that haven't kicked off, or have finished, get nothing.
+
+**The badge shows ✕.**
+The stats provider doesn't have that match in its live list — common for lower divisions and
+youth leagues. The strip tells you the closest match it found. Try switching provider in the
+settings (toolbar icon → *Data source*).
+
+**I see nothing at all, ever.**
+Check the extension is enabled in your browser's add-ons page, and that you're on
+`epicbet.com` or `epicbet.io`. If it's still dead, open the settings and turn on *Log debug
+output to the page console*, then press F12 on epicbet and look at the Console tab — and
+[open an issue](../../issues) with what it says.
+
+**Chrome says the extension may have been corrupted.**
+You moved or deleted the unzipped folder. Chrome needs it to stay where it was when you
+installed. Put it back, or reinstall from step 2.
+
+---
+
+## Settings
+
+Nothing needs configuring — it works out of the box. Click the extension's icon in the
+toolbar to change any of this:
 
 | Setting | Default | Notes |
 |---|---|---|
@@ -131,7 +168,7 @@ Click the toolbar icon for settings:
 | Player stats | 4 of 17 | Columns in the expandable table |
 | Debug logging | off | Logs what the adapter found, to the page console |
 
-Troubleshooting lives in **[SETUP.md](SETUP.md)**.
+Deeper troubleshooting and the developer setup live in **[SETUP.md](SETUP.md)**.
 
 ---
 
@@ -218,6 +255,15 @@ calls the two stats providers; that is the whole of its network activity.
 ---
 
 ## Development
+
+Build from source (Node.js required — there is no bundler and no runtime dependency):
+
+```bash
+git clone https://github.com/<your-username>/sagabet-livestats.git
+cd sagabet-livestats
+npm install          # only linkedom, used by the tests
+npm run build        # -> dist/chrome, dist/firefox, dist/firefox-mv2, dist/safari
+```
 
 ```bash
 npm test              # matcher, DOM adapter, both connectors, full render pipeline

@@ -58,6 +58,26 @@ async function build(name) {
   const manifest = targets[name](structuredClone(base));
   await writeFile(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
 
+  // Chrome is installed by unzipping and pointing "Load unpacked" at the folder.
+  if (name === 'chrome') {
+    const zip = path.join(DIST, 'sagabet-livestats-chrome.zip');
+    const staged = path.join(DIST, 'sagabet-livestats-chrome');
+    await rm(zip, { force: true });
+    await rm(staged, { recursive: true, force: true });
+    try {
+      // Unzipping should yield one clearly-named folder, since Chrome loads the
+      // extension from wherever the user leaves it.
+      await cp(out, staged, { recursive: true });
+      execFileSync('zip', ['-qr', zip, 'sagabet-livestats-chrome'], { cwd: DIST });
+      await rm(staged, { recursive: true, force: true });
+      console.log(`built dist/${name}  ->  ${path.relative(root, zip)}`);
+      return;
+    } catch {
+      console.log(`built dist/${name}  (zip unavailable)`);
+      return;
+    }
+  }
+
   // Firefox-family browsers install from a zipped .xpi, so emit one too.
   if (name.startsWith('firefox')) {
     const xpi = path.join(DIST, `sagabet-livestats-${name}.xpi`);
