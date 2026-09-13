@@ -1,0 +1,19 @@
+{
+  "name": "sagabet-livestats",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser extension adding live match statistics to epicbet's placed-bets view",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:chrome": "node scripts/build.mjs chrome",
+    "build:firefox": "node scripts/build.mjs firefox firefox-mv2",
+    "build:safari": "node scripts/build.mjs safari",
+    "zip": "npm run build",
+    "test": "node scripts/test-matcher.mjs && node scripts/test-extract.mjs && node scripts/test-normalize.mjs && node scripts/test-render.mjs",
+    "check:live": "bash scripts/check-live.sh"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.13"
+  }
+}

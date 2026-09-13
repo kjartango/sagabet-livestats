@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "SagaBet Live Stats",
+  "version": "0.1.0",
+  "description": "Adds live match statistics (shots, corners, cards, score) to your placed bets on epicbet.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "*://*.epicbet.com/*",
+    "*://*.epicbet.io/*",
+    "https://api.sofascore.com/*",
+    "https://www.fotmob.com/*",
+    "https://v3.football.api-sports.io/*",
+    "https://api-football-v1.p.rapidapi.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.epicbet.com/*",
+    "*://*.epicbet.io/*"],
+      "js": ["content/loader.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content/*.js", "common/*.js", "background/stat-keys.js"],
+      "matches": ["*://*.epicbet.com/*",
+    "*://*.epicbet.io/*"]
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "SagaBet Live Stats",
+    "default_popup": "options/options.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

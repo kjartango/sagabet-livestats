@@ -1,0 +1,12 @@
+dist/
+node_modules/
+*.zip
+*.xpi
+
+# Saved copies of the live bets page contain real account data — ticket ids,
+# stakes, winnings, balances. Keep them local. Tests run against the synthetic
+# fixture in samples/fixtures/ instead.
+samples/*.html
+samples/*.png
+samples/*_files/
+!samples/fixtures/

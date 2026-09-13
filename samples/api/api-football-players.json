@@ -1,0 +1,30 @@
+{
+  "_note": "SYNTHETIC — see api-football-live.json.",
+  "errors": [],
+  "response": [
+    { "team": { "id": 106, "name": "Stade Brestois 29" }, "players": [
+      { "player": { "id": 1001, "name": "M. Le Douaron" }, "statistics": [ {
+        "games": { "minutes": 73, "number": 9, "position": "F", "rating": "6.8", "substitute": false },
+        "offsides": 1, "shots": { "total": 4, "on": 2 }, "goals": { "total": null, "assists": null, "saves": null },
+        "passes": { "key": 2 }, "tackles": { "total": 1, "interceptions": null },
+        "fouls": { "drawn": 3, "committed": 2 }, "cards": { "yellow": 1, "red": 0 } } ] },
+      { "player": { "id": 1002, "name": "P. Lees-Melou" }, "statistics": [ {
+        "games": { "minutes": 73, "number": 8, "position": "M", "rating": "7.1", "substitute": false },
+        "offsides": null, "shots": { "total": 2, "on": 1 }, "goals": { "total": null, "assists": 1, "saves": null },
+        "passes": { "key": 3 }, "tackles": { "total": 4, "interceptions": 2 },
+        "fouls": { "drawn": 1, "committed": 3 }, "cards": { "yellow": 0, "red": 0 } } ] }
+    ] },
+    { "team": { "id": 85, "name": "Paris Saint Germain" }, "players": [
+      { "player": { "id": 2001, "name": "O. Dembélé" }, "statistics": [ {
+        "games": { "minutes": 73, "number": 10, "position": "F", "rating": "8.2", "substitute": false },
+        "offsides": 2, "shots": { "total": 6, "on": 4 }, "goals": { "total": 1, "assists": null, "saves": null },
+        "passes": { "key": 4 }, "tackles": { "total": null, "interceptions": null },
+        "fouls": { "drawn": 4, "committed": 1 }, "cards": { "yellow": 0, "red": 0 } } ] },
+      { "player": { "id": 2002, "name": "G. Donnarumma" }, "statistics": [ {
+        "games": { "minutes": 73, "number": 1, "position": "G", "rating": "6.9", "substitute": false },
+        "offsides": null, "shots": { "total": null, "on": null }, "goals": { "total": null, "assists": null, "saves": 3 },
+        "passes": { "key": null }, "tackles": { "total": null, "interceptions": null },
+        "fouls": { "drawn": null, "committed": null }, "cards": { "yellow": 1, "red": 0 } } ] }
+    ] }
+  ]
+}

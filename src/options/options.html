@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SagaBet Live Stats — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>SagaBet Live Stats</h1>
+
+    <label class="row">
+      <input type="checkbox" id="enabled">
+      <span>Show live stats on the placed-bets view</span>
+    </label>
+
+    <section>
+      <h2>Data source</h2>
+      <p class="hint">
+        Both sources are free and need no account or key. If the preferred one stops
+        answering, the other is used automatically.
+      </p>
+      <label class="field">
+        <span>Prefer</span>
+        <select id="provider"></select>
+      </label>
+
+      <div id="keyPanel" class="panel" hidden>
+        <p class="hint">
+          API-Football is a licensed API, so it needs your own key — free to register, no
+          card required, at
+          <a href="https://dashboard.api-football.com/register" target="_blank" rel="noreferrer">dashboard.api-football.com</a>.
+          The key is stored in this browser only; it is never sent anywhere but the API
+          itself.
+        </p>
+        <label class="field">
+          <span>API key</span>
+          <input type="password" id="apiKey" autocomplete="off" spellcheck="false" placeholder="paste your key">
+          <button id="reveal" type="button" class="ghost" title="Show or hide the key">👁</button>
+        </label>
+        <label class="field">
+          <span>Key from</span>
+          <select id="apiHost">
+            <option value="api-sports">api-football.com (direct)</option>
+            <option value="rapidapi">RapidAPI marketplace</option>
+          </select>
+        </label>
+        <p class="hint" id="budgetHint"></p>
+      </div>
+
+      <button id="test" type="button">Test connection</button>
+      <p id="testResult" class="result"></p>
+    </section>
+
+    <section>
+      <h2>Refresh</h2>
+      <label class="field">
+        <span>Every</span>
+        <input type="number" id="refreshSeconds" min="15" max="900" step="5">
+        <span class="unit">seconds</span>
+      </label>
+      <label class="row">
+        <input type="checkbox" id="onlyLive">
+        <span>Only look up matches epicbet shows as in play</span>
+      </label>
+    </section>
+
+    <section>
+      <h2>Team stats</h2>
+      <p class="hint">Shown as chips under each bet.</p>
+      <div id="teamStats" class="stats"></div>
+    </section>
+
+    <section>
+      <h2>Player stats</h2>
+      <label class="row">
+        <input type="checkbox" id="showPlayers">
+        <span>Show the expandable per-player table</span>
+      </label>
+      <p class="hint">Columns in that table, in order.</p>
+      <div id="playerStats" class="stats"></div>
+    </section>
+
+    <label class="row">
+      <input type="checkbox" id="debug">
+      <span>Log debug output to the page console</span>
+    </label>
+
+    <p id="saved" class="saved" hidden>Saved</p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

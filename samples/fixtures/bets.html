@@ -1,0 +1,144 @@
+<!doctype html>
+<!--
+  Synthetic stand-in for epicbet's "My bets" modal.
+
+  Reproduces the real DOM structure — data-testid hooks, the hashed-looking
+  class names, the wrapper that pairs a selection with its live score widget —
+  with invented teams, ids and stakes. No real account data.
+
+  Deliberately covers the cases that break naive parsing:
+    1. live football single      -> must parse, must be flagged live
+    2. accumulator, match ended  -> must parse, must NOT be flagged live
+    3. accumulator, not started  -> must parse, no score widget at all
+    4. outright with " - " in the MARKET name -> must NOT yield a fixture
+    5. American football          -> must parse but be excluded by sport id
+-->
+<html lang="is">
+<body>
+<div data-testid="my-bets-container" class="flex column gap-full _17fwfqi3">
+  <div class="_17fwfqi8">
+    <button tab-id="pending" data-testkey="pending" class="selected">Opið</button>
+    <button tab-id="settled" data-testkey="settled">Afgreitt</button>
+  </div>
+
+  <div class="_1xxv7vep _17fwfqi0" data-testid="ticket-list-container">
+
+    <!-- 1. Single on a totals market, match in play -->
+    <div class="_159qn3mc i9y3140">
+      <div class="_1axdwyn0">
+        <div data-testid="betslip-selection" data-testkey="900000001" class="_1yfzc7i3">
+          <div class="_1yfzc7i6"><div class="_1yfzc7i7">
+            <div class="_1yfzc7im"><div>
+              <span class="_1yfzc7i9">Yfir 32.5</span>
+              <div class="_1yfzc7ib">Match Total Shots</div>
+            </div></div>
+            <div class="h5xtth1 h5xtth0">Northport - Rivermouth City</div>
+            <div class="_153ow0b0">13. sep., 18:45 / Example League</div>
+          </div>
+          <div class="_1yfzc7i8">
+            <span class="xf5o0r3">Í beinni</span>
+            <div class="_1yfzc7if">1.38 </div>
+          </div></div>
+        </div>
+        <div data-match-id="900100" data-sport-id="1" data-testkey="900100" data-testid="match-container">
+          <div class="ustg9b1">
+            <button data-testid="match-score-container" class="no-default-appearance">
+              <div class="_6o1p9n5"><span class="_6o1p9nf">0</span><div class="_6o1p9nl"></div><span class="_6o1p9nf">1</span></div>
+              <div class="ustg9b5">
+                <div class="_16f7cte0"><span class="_1mv4fe80">73'</span></div>
+                <div class="ustg9bb"><span class="pfkvdz0">2H</span></div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Accumulator leg whose match has finished: score shown, no clock -->
+    <div class="_159qn3mc i9y3140">
+      <div class="_1axdwyn0">
+        <div data-testid="betslip-selection" data-testkey="900000002" class="_1yfzc7i3">
+          <div class="_1yfzc7i6"><div class="_1yfzc7i7">
+            <div class="_1yfzc7im"><div>
+              <span class="_1yfzc7i9">Harbour Rovers</span>
+              <div class="_1yfzc7ib">1x2</div>
+            </div></div>
+            <div class="h5xtth1 h5xtth0">Harbour Rovers - Kingsbridge</div>
+            <div class="_153ow0b0">9. sep., 19:00 / Example Cup</div>
+          </div>
+          <div class="_1yfzc7i8"><div class="_1yfzc7if">1.66 </div></div></div>
+        </div>
+        <div data-match-id="900101" data-sport-id="1" data-testkey="900101" data-testid="match-container">
+          <div class="ustg9b1">
+            <button data-testid="match-score-container" class="no-default-appearance">
+              <div class="_6o1p9n5"><span class="_6o1p9nf">6</span><div class="_6o1p9nl"></div><span class="_6o1p9nf">3</span></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Accumulator leg, kick-off still ahead: no score widget -->
+    <div class="_159qn3mk i9y3141">
+      <div class="_1axdwyn0">
+        <div data-testid="betslip-selection" data-testkey="900000003" class="_1yfzc7i3">
+          <div class="_1yfzc7i6"><div class="_1yfzc7i7">
+            <div class="_1yfzc7im"><div>
+              <span class="_1yfzc7i9">Ashford Town</span>
+              <div class="_1yfzc7ib">1x2</div>
+            </div></div>
+            <div class="h5xtth1 h5xtth0">Ashford Town - Westvale</div>
+            <div class="_153ow0b0">15. sep., 19:00 / Example Cup</div>
+          </div>
+          <div class="_1yfzc7i8"><div class="_1yfzc7if">1.77 </div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Season outright. The MARKET name contains " - "; there is no fixture
+            here at all, and treating the market as one invents a match. -->
+    <div class="_159qn3mc i9y3140">
+      <div class="_1axdwyn0">
+        <div data-testid="betslip-selection" data-testkey="900000004" class="_1yfzc7i3">
+          <div class="_1yfzc7i6"><div class="_1yfzc7i7">
+            <div class="_1yfzc7im"><div>
+              <span class="_1yfzc7i9">Ashford Town</span>
+              <div class="_1yfzc7ib">Tímabil H2H Ashford Town - Westvale</div>
+            </div></div>
+            <div class="h5xtth1 h5xtth0">Example League 2026/27 Season Bets</div>
+            <div class="_153ow0b0">4. sep., 19:00 / Example League</div>
+          </div>
+          <div class="_1yfzc7i8"><div class="_1yfzc7if">1.87 </div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. American football: parses fine, but no football feed covers it -->
+    <div class="_159qn3mc i9y3140">
+      <div class="_1axdwyn0">
+        <div data-testid="betslip-selection" data-testkey="900000005" class="_1yfzc7i3">
+          <div class="_1yfzc7i6"><div class="_1yfzc7i7">
+            <div class="_1yfzc7im"><div>
+              <span class="_1yfzc7i9">BAY Otters</span>
+              <div class="_1yfzc7ib">Sigurvegari</div>
+            </div></div>
+            <div class="h5xtth1 h5xtth0">BAY Otters - SUM Ravens</div>
+            <div class="_153ow0b0">13. sep., 20:25 / Example Football League</div>
+          </div>
+          <div class="_1yfzc7i8"><div class="_1yfzc7if">1.59 </div></div></div>
+        </div>
+        <div data-match-id="900102" data-sport-id="18" data-testkey="900102" data-testid="match-container">
+          <div class="ustg9b1">
+            <button data-testid="match-score-container" class="no-default-appearance">
+              <div class="_6o1p9n5"><span class="_6o1p9nf">24</span><div class="_6o1p9nl"></div><span class="_6o1p9nf">17</span></div>
+              <div class="ustg9b5"><div class="ustg9bb"><span class="pfkvdz0">Q4</span></div></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

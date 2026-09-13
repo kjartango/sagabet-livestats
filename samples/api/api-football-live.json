@@ -1,0 +1,18 @@
+{
+  "_note": "SYNTHETIC. Built from API-Football's documented v3 schema, not captured from the live API — nobody here has a key. Shapes may drift; treat a failure here as a hint, not proof.",
+  "errors": [],
+  "response": [
+    {
+      "fixture": { "id": 1208420, "status": { "long": "Second Half", "short": "2H", "elapsed": 73, "extra": null } },
+      "league": { "id": 61, "name": "Ligue 1", "country": "France" },
+      "teams": { "home": { "id": 106, "name": "Stade Brestois 29" }, "away": { "id": 85, "name": "Paris Saint Germain" } },
+      "goals": { "home": 0, "away": 1 }
+    },
+    {
+      "fixture": { "id": 1208421, "status": { "long": "First Half", "short": "1H", "elapsed": 22, "extra": null } },
+      "league": { "id": 39, "name": "Premier League", "country": "England" },
+      "teams": { "home": { "id": 42, "name": "Arsenal" }, "away": { "id": 49, "name": "Chelsea" } },
+      "goals": { "home": 2, "away": 0 }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+:root { color-scheme: light dark; }
+body {
+  margin: 0;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: Canvas; color: CanvasText;
+}
+main { max-width: 520px; padding: 20px; margin: 0 auto; }
+h1 { font-size: 18px; margin: 0 0 16px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; opacity: .6; margin: 0 0 8px; }
+section { padding: 14px 0; border-top: 1px solid color-mix(in srgb, CanvasText 14%, transparent); }
+.field { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.field > span:first-child { min-width: 88px; opacity: .75; }
+input[type=number], select {
+  flex: 1; min-width: 0; padding: 6px 8px; font: inherit;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+  border-radius: 6px; background: Field; color: FieldText;
+}
+input[type=number] { flex: 0 0 90px; }
+.unit { opacity: .6; }
+.row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+button {
+  padding: 6px 12px; font: inherit; border-radius: 6px; cursor: pointer;
+  border: 1px solid color-mix(in srgb, CanvasText 25%, transparent);
+  background: color-mix(in srgb, CanvasText 6%, transparent); color: inherit;
+}
+button:hover { background: color-mix(in srgb, CanvasText 12%, transparent); }
+.hint { font-size: 12px; opacity: .65; margin: 4px 0 10px; }
+.result { font-size: 12px; min-height: 1.2em; margin: 8px 0 0; }
+.result.ok { color: #12805c; }
+.result.err { color: #b42318; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.stats label { display: flex; align-items: center; gap: 7px; }
+.saved { font-size: 12px; color: #12805c; }
+a { color: inherit; }
+h3 {
+  font-size: 11px; font-weight: 600; opacity: .5; margin: 10px 0 4px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 14px; }
+.grid label { display: flex; align-items: center; gap: 7px; }
+
+.panel {
+  margin: 10px 0; padding: 12px; border-radius: 8px;
+  background: color-mix(in srgb, CanvasText 5%, transparent);
+  border: 1px solid color-mix(in srgb, CanvasText 12%, transparent);
+}
+.panel .field > span:first-child { min-width: 72px; }
+button.ghost {
+  border: 0; background: none; padding: 2px 6px; font-size: 15px; line-height: 1;
+}
+button.ghost:hover { background: color-mix(in srgb, CanvasText 12%, transparent); }
