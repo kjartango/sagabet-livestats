@@ -97,21 +97,17 @@ normal for any extension installed from a file; you can dismiss it.
 
 ### 🧭 Safari
 
-**Safari is genuinely difficult and needs a Mac with Xcode installed** — Apple requires
-every Safari extension to be wrapped in an app. There's no download-and-click option. If
-you're comfortable with a terminal:
+**Safari needs a Mac with Xcode** — Apple requires every Safari extension to be wrapped in
+an app you build yourself. There's no download-and-click option, and it can't be done from
+Windows or Linux.
 
-```bash
-git clone https://github.com/<your-username>/sagabet-livestats.git
-cd sagabet-livestats
-npm run build:safari
-xcrun safari-web-extension-converter dist/safari --project-location safari/ --macos-only
-open "safari/SagaBet Live Stats/SagaBet Live Stats.xcodeproj"
-```
+It's about 30 minutes, mostly waiting for Xcode to download. Full step-by-step walkthrough:
+**[SAFARI.md](SAFARI.md)**.
 
-Build and run it in Xcode. Then in Safari: **Settings → Advanced →** tick *Show features for
-web developers*, **Settings → Developer →** tick *Allow unsigned extensions*, and finally
-**Settings → Extensions →** enable it and allow access to epicbet.
+Be aware of one Apple limitation before you start: locally-built Safari extensions are
+switched off every time you quit Safari, so you have to re-tick one checkbox on each
+restart unless you have a paid Apple Developer account. Firefox/Zen and Chrome have no
+equivalent nuisance.
 
 ---
 
