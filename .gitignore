@@ -10,3 +10,7 @@ samples/*.html
 samples/*.png
 samples/*_files/
 !samples/fixtures/
+
+# AMO API credentials — never commit these
+.env
+dist/web-ext-artifacts/

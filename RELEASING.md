@@ -25,43 +25,54 @@ Consequences of being unlisted:
 
 ## Cutting a release
 
-**1. Bump the version.** In `package.json` *and* `src/manifest.json` — they must match.
+### Automated (preferred)
 
-```bash
-npm test && npm run build
+One-time setup: create an API key at
+[addons.mozilla.org/developers/addon/api/key](https://addons.mozilla.org/developers/addon/api/key/)
+and put the two values in a `.env` file in the project root (gitignored):
+
+```
+AMO_JWT_ISSUER=user:12345678:123
+AMO_JWT_SECRET=...
 ```
 
-**2. Get the Firefox build signed.**
+The secret is displayed once and cannot be retrieved later. Anyone holding it can publish
+add-ons as you — treat it like a password, and revoke it on that page if it ever leaks.
 
-- Go to the [Developer Hub](https://addons.mozilla.org/developers/) → your add-on →
-  **Upload New Version**
-- Choose **On your own** (this is what keeps it unlisted)
-- Upload `dist/sagabet-livestats-firefox-mv2.xpi`
-- Wait for signing — unlisted submissions are usually signed within minutes
-- **Download the signed `.xpi`** from the Developer Hub. This is not the same file you
-  uploaded; it now carries Mozilla's signature
-
-**3. Publish the release**, with the *signed* Firefox file:
+Then, per release:
 
 ```bash
-gh release create v<version> \
-  <path-to-signed>.xpi \
-  dist/sagabet-livestats-chrome.zip \
-  --title "v<version>" --notes "..."
+# 1. bump the version in package.json AND src/manifest.json (they must match)
+npm test          # includes the built-artifact checks
+npm run lint      # addons-linter, self-hosted mode — expect 0 errors
+npm run sign      # uploads to AMO, waits for signing, writes the signed .xpi to dist/
+git commit -am "Release vX.Y.Z" && git push
+npm run release   # GitHub release + updates.json + push
 ```
 
-The signed asset must be named `sagabet-livestats-firefox-mv2.xpi` — `updates.json` links
-to it by exact filename.
+`npm run sign` submits to the **unlisted** channel, which is what keeps the add-on
+self-distributed. Unlisted submissions are signed automatically, usually in under a minute.
 
-**4. Point the update manifest at it:**
+`npm run release` refuses to publish an unsigned `.xpi` — it checks for the Mozilla
+signature first, because an unsigned file on the release would install for nobody and break
+auto-updates without any visible error.
+
+### By hand
+
+The web flow, if you'd rather not hold an API key:
 
 ```bash
-node scripts/make-updates-json.mjs
-git add updates.json && git commit -m "Release v<version>" && git push
+npm test && npm run lint && npm run build
 ```
 
-Existing installs pick the new version up within a day, or immediately via
-`about:addons` → gear → **Check for Updates**.
+- [Developer Hub](https://addons.mozilla.org/developers/) → the add-on → **Upload New
+  Version** → **On your own** → upload `dist/sagabet-livestats-firefox-mv2.xpi`
+- Download the signed `.xpi` back from the Developer Hub — it is *not* the file you uploaded
+- Put it at `dist/sagabet-livestats-firefox-mv2.xpi`, replacing the unsigned build
+- `npm run release`
+
+Either way the release asset must keep the exact filename
+`sagabet-livestats-firefox-mv2.xpi`; `updates.json` links to it by name.
 
 ## Verifying updates work
 
