@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SagaBet Live Stats",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Adds live match statistics (shots, corners, cards, score) to your placed bets on epicbet.",
   "permissions": [
     "storage"
