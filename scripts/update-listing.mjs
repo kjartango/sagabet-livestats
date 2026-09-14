@@ -111,7 +111,9 @@ async function uploadScreenshot(addon) {
 
   const form = new FormData();
   form.append('image', new Blob([bytes], { type: 'image/png' }), path.basename(file));
-  form.append('caption', JSON.stringify({ [LOCALE]: listing.screenshot.caption }));
+  // Multipart can't carry a nested object as JSON here — AMO wants the
+  // localised field expressed as caption[<lang>], Django-style.
+  form.append(`caption[${LOCALE}]`, listing.screenshot.caption);
   form.append('position', '0');
 
   const up = await fetch(`${base}/previews/`, {
