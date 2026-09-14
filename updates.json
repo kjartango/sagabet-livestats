@@ -5,6 +5,10 @@
         {
           "version": "0.1.0",
           "update_link": "https://github.com/kjartango/sagabet-livestats/releases/download/v0.1.0/sagabet-livestats-firefox-mv2.xpi"
+        },
+        {
+          "version": "0.1.2",
+          "update_link": "https://github.com/kjartango/sagabet-livestats/releases/download/v0.1.2/sagabet-livestats-firefox-mv2.xpi"
         }
       ]
     }
