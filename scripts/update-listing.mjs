@@ -96,12 +96,35 @@ if (!updated.has_privacy_policy) {
   console.log('Developer Hub -> Edit Product Page -> Privacy Policy.');
 }
 
+/** Captions are set as JSON on the preview; the multipart upload ignores them. */
+async function setCaption(previewId) {
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    const r = await fetch(`${base}/previews/${previewId}/`, {
+      method: 'PATCH',
+      headers: { Authorization: `JWT ${token()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caption: { [LOCALE]: listing.screenshot.caption } }),
+    });
+    if (r.ok) { console.log(`  caption set on preview ${previewId}`); return true; }
+    if (r.status !== 429) {
+      console.error(`  caption not set: HTTP ${r.status} ${(await r.text()).slice(0, 200)}`);
+      return false;
+    }
+    const wait = Number((await r.json()).detail?.match(/(\d+) seconds/)?.[1] || 30) + 5;
+    console.log(`  throttled, waiting ${wait}s…`);
+    await new Promise((ok) => { setTimeout(ok, wait * 1000); });
+  }
+  return false;
+}
+
 async function uploadScreenshot(addon) {
   if (!listing.screenshot) return;
 
   const existing = addon.previews || [];
   if (existing.length) {
     console.log(`\n${existing.length} screenshot(s) already attached — skipping upload.`);
+    // An earlier run may have uploaded the image but failed to caption it.
+    const uncaptioned = existing.find((p) => !p.caption || !Object.keys(p.caption).length);
+    if (uncaptioned) await setCaption(uncaptioned.id);
     return;
   }
 
@@ -128,4 +151,8 @@ async function uploadScreenshot(addon) {
   }
   const preview = await up.json();
   console.log(`  uploaded, preview id ${preview.id}`);
+
+  // The caption is not stored by the multipart upload, whatever field shape it
+  // is given — it has to be set afterwards as JSON on the preview itself.
+  if (!preview.caption) await setCaption(preview.id);
 }
