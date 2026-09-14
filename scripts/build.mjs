@@ -7,6 +7,11 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// Self-distributed Firefox builds need somewhere to look for updates. AMO
+// handles updates for listed add-ons, so a listed submission must NOT carry
+// this key — see RELEASING.md.
+const UPDATE_URL = 'https://raw.githubusercontent.com/kjartango/sagabet-livestats/main/updates.json';
 const SRC = path.join(root, 'src');
 const DIST = path.join(root, 'dist');
 
@@ -18,7 +23,11 @@ const targets = {
     // Firefox MV3 uses an event page rather than a service worker.
     background: { scripts: [m.background.service_worker], type: 'module' },
     browser_specific_settings: {
-      gecko: { id: 'sagabet-livestats@kjartan', strict_min_version: '128.0' },
+      gecko: {
+        id: 'sagabet-livestats@kjartan',
+        strict_min_version: '128.0',
+        update_url: UPDATE_URL,
+      },
     },
   }),
 
@@ -40,7 +49,11 @@ const targets = {
     browser_action: m.action,
     icons: m.icons,
     browser_specific_settings: {
-      gecko: { id: 'sagabet-livestats@kjartan', strict_min_version: '115.0' },
+      gecko: {
+        id: 'sagabet-livestats@kjartan',
+        strict_min_version: '115.0',
+        update_url: UPDATE_URL,
+      },
     },
   }),
 
