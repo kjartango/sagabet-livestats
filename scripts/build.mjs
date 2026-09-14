@@ -4,6 +4,7 @@
 import { cp, rm, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { build as esbuild } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,8 +50,6 @@ const targets = {
     permissions: [...m.permissions, ...m.host_permissions],
     background: { page: 'background/background.html', persistent: false },
     content_scripts: m.content_scripts,
-    // MV2 takes a flat list rather than match-scoped objects.
-    web_accessible_resources: m.web_accessible_resources[0].resources,
     options_ui: m.options_ui,
     browser_action: m.action,
     icons: m.icons,
@@ -68,11 +67,42 @@ const targets = {
   safari: (m) => m,
 };
 
+/**
+ * Bundle the content script into one classic file.
+ *
+ * Content scripts cannot be declared as modules, so the alternative is a
+ * dynamic `import(runtime.getURL(...))` — which Mozilla's validator flags as a
+ * rejection risk. Bundling removes it, and lets the manifest drop
+ * web_accessible_resources entirely.
+ *
+ * Deliberately NOT minified: the shipped file stays readable, so a reviewer (or
+ * anyone curious) can compare it against the source in this repo.
+ */
+async function bundleContentScript(outDir) {
+  await esbuild({
+    entryPoints: [path.join(SRC, 'content/content.js')],
+    outfile: path.join(outDir, 'content/content.bundle.js'),
+    bundle: true,
+    format: 'iife',
+    target: ['chrome111', 'firefox115', 'safari16'],
+    minify: false,
+    legalComments: 'inline',
+    banner: { js: '// Bundled from src/content/ by scripts/build.mjs — not minified.\n// Source: https://github.com/kjartango/sagabet-livestats' },
+  });
+
+  // The module sources are inputs to the bundle, not shipped files.
+  for (const f of ['content.js', 'extract.js', 'render.js', 'loader.js']) {
+    await rm(path.join(outDir, 'content', f), { force: true });
+  }
+}
+
 async function build(name) {
   const out = path.join(DIST, name);
   await rm(out, { recursive: true, force: true });
   await mkdir(out, { recursive: true });
   await cp(SRC, out, { recursive: true });
+
+  await bundleContentScript(out);
 
   const base = JSON.parse(await readFile(path.join(SRC, 'manifest.json'), 'utf8'));
   const manifest = targets[name](structuredClone(base));

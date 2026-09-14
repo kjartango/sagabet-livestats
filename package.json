@@ -10,11 +10,12 @@
     "build:firefox": "node scripts/build.mjs firefox firefox-mv2",
     "build:safari": "node scripts/build.mjs safari",
     "zip": "npm run build",
-    "test": "node scripts/test-matcher.mjs && node scripts/test-extract.mjs && node scripts/test-normalize.mjs && node scripts/test-render.mjs",
+    "test": "node scripts/test-matcher.mjs && node scripts/test-extract.mjs && node scripts/test-normalize.mjs && node scripts/test-render.mjs && npm run build >/dev/null && node scripts/test-bundle.mjs",
     "check:live": "bash scripts/check-live.sh",
     "lint": "npm run build >/dev/null && npx --yes addons-linter --self-hosted dist/firefox-mv2"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "linkedom": "^0.18.13"
   }
 }

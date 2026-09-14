@@ -173,7 +173,7 @@ Deeper troubleshooting and the developer setup live in **[SETUP.md](SETUP.md)**.
 | Piece | File | Role |
 |---|---|---|
 | DOM adapter | `src/content/extract.js` | Finds selections in the bets modal, scrapes the fixture |
-| Renderer | `src/content/render.js` | Injects the strip into a shadow root under each row |
+| Renderer | `src/content/render.js` | Builds the strip as DOM nodes in a shadow root under each row |
 | Loop | `src/content/content.js` | Re-scans on DOM mutation, polls on an interval |
 | Connectors | `src/background/sofascore.js`, `fotmob.js`, `api-football.js` | Live feeds — two keyless, one BYOK — with fallback |
 | Vocabulary | `src/background/stat-keys.js` | Canonical keys both connectors translate into |
@@ -252,7 +252,7 @@ calls the two stats providers; that is the whole of its network activity.
 
 ## Development
 
-Build from source (Node.js required — there is no bundler and no runtime dependency):
+Build from source:
 
 ```bash
 git clone https://github.com/<your-username>/sagabet-livestats.git
@@ -273,6 +273,7 @@ npm run build         # all targets
 | `test-extract.mjs` | DOM adapter against `samples/fixtures/bets.html`, with assertions |
 | `test-normalize.mjs` | All three connectors against API responses in `samples/api/` |
 | `test-render.mjs` | Full pipeline: page fixture + real provider data → rendered strip |
+| `test-bundle.mjs` | The shipped artifacts: bundle parses, no `import()`, no `innerHTML`, manifests correct |
 
 `samples/fixtures/bets.html` is a synthetic stand-in for the bets modal. It reproduces the
 real structure with invented data and deliberately includes the cases that break naive
@@ -285,6 +286,20 @@ extension runs, so those two are tested against responses captured with curl, an
 `npm run check:live` probes the real endpoints. The API-Football fixtures are *synthetic*,
 written from its published v3 schema rather than captured, because that connector needs a
 key nobody had at the time; a failure there is a hint, not proof.
+
+### The build
+
+`npm run build` copies `src/` into `dist/<target>/`, writes a per-browser manifest, and
+bundles the content script with esbuild.
+
+The content script is the one thing that has to be bundled: content scripts can't be
+declared as ES modules, and the alternative — `import(runtime.getURL(...))` — is flagged by
+Mozilla's validator as a rejection risk. Bundling also lets the manifest drop
+`web_accessible_resources` entirely.
+
+It is deliberately **not minified**. The shipped `content.bundle.js` stays readable so it
+can be compared against the source here. Everything else — the background connectors, the
+options page — ships as the same module files you see in `src/`.
 
 ### Icons
 

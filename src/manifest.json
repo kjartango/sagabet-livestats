@@ -20,15 +20,8 @@
     {
       "matches": ["*://*.epicbet.com/*",
     "*://*.epicbet.io/*"],
-      "js": ["content/loader.js"],
+      "js": ["content/content.bundle.js"],
       "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["content/*.js", "common/*.js", "background/stat-keys.js"],
-      "matches": ["*://*.epicbet.com/*",
-    "*://*.epicbet.io/*"]
     }
   ],
   "options_ui": {
