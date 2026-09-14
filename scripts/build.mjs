@@ -67,6 +67,14 @@ const targets = {
     },
   }),
 
+  // Same as firefox-mv2, minus update_url: AMO rejects that key outright on
+  // catalogue-hosted add-ons, because it delivers updates itself.
+  'firefox-listed': (m) => {
+    const built = targets['firefox-mv2'](m);
+    delete built.browser_specific_settings.gecko.update_url;
+    return built;
+  },
+
   // Safari reads a standard MV3 manifest; xcrun wraps it into an app.
   safari: (m) => m,
 };

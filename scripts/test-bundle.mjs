@@ -4,7 +4,7 @@
 import { readFile, access } from 'node:fs/promises';
 import { Script } from 'node:vm';
 
-const TARGETS = ['chrome', 'firefox', 'firefox-mv2', 'safari'];
+const TARGETS = ['chrome', 'firefox', 'firefox-mv2', 'firefox-listed', 'safari'];
 let failed = 0;
 
 function check(label, ok, detail = '') {
@@ -54,7 +54,14 @@ for (const target of TARGETS) {
   if (target.startsWith('firefox')) {
     const gecko = manifest.browser_specific_settings?.gecko;
     check('declares data collection', gecko?.data_collection_permissions?.required?.[0] === 'none');
-    check('declares update_url for self-distribution', !!gecko?.update_url);
+
+    // The two Firefox variants have opposite requirements here: AMO demands
+    // update_url for self-distribution and rejects it for catalogue listings.
+    if (target === 'firefox-listed') {
+      check('no update_url (AMO rejects it on listed add-ons)', !gecko?.update_url);
+    } else {
+      check('declares update_url for self-distribution', !!gecko?.update_url);
+    }
   }
 }
 

@@ -137,6 +137,32 @@ with `createElement`/`textContent`, because team and player names come from thir
 and market text is scraped from epicbet. `npm test` asserts both of these against the built
 artifacts, so neither can come back unnoticed.
 
+## Switching to a listed (catalogue) add-on
+
+Currently self-distributed. To be findable by searching addons.mozilla.org instead:
+
+```bash
+npm run lint:listed     # addons-linter in listed mode — expect 0 errors
+```
+
+Upload `dist/sagabet-livestats-firefox-listed.xpi`, which is the same extension without
+`update_url`. AMO rejects that key on listed add-ons because it delivers updates itself;
+`updates.json` and the release-asset step become redundant.
+
+[LISTING.md](LISTING.md) holds the store copy: summary, description, categories, privacy
+policy and reviewer notes.
+
+Two things to know before starting:
+
+- **An add-on's distribution channel is set on AMO, not here.** This repo can produce both
+  builds, but whether an existing unlisted add-on can be converted, or whether a listed
+  submission has to start as a separate entry, is a question for the Developer Hub. Check
+  before uploading — a second entry would need a different add-on id.
+- **Listed means human review.** Expect attention on three points: the extension operates
+  on a gambling site, it reads undocumented third-party statistics endpoints, and its
+  listing describes another company's product. None breaches Mozilla's policies; all three
+  are worth answering in the reviewer notes up front.
+
 ## Notes for the reviewer
 
 Worth pasting into the submission notes:
