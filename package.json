@@ -18,7 +18,8 @@
     "lint:listed": "npm run build >/dev/null && npx --yes addons-linter dist/firefox-listed",
     "fetch-signed": "node scripts/fetch-signed.mjs",
     "sign:listed": "npm run build >/dev/null && node scripts/sign.mjs --listed",
-    "update-listing": "node scripts/update-listing.mjs"
+    "update-listing": "node scripts/update-listing.mjs",
+    "source-zip": "node scripts/source-zip.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
