@@ -17,6 +17,10 @@ const UPDATE_URL = 'https://raw.githubusercontent.com/kjartango/sagabet-livestat
 // Firefox requires every new extension to declare what user data it collects.
 // This one collects none: settings stay in local storage and nothing about the
 // user is transmitted anywhere. "none" cannot be combined with other values.
+//
+// The key is only understood from Firefox 140 (Android 142), which is why
+// strict_min_version sits there rather than lower — older builds would receive
+// an extension whose data declaration they cannot read.
 const DATA_COLLECTION = { required: ['none'] };
 const SRC = path.join(root, 'src');
 const DIST = path.join(root, 'dist');
@@ -31,7 +35,7 @@ const targets = {
     browser_specific_settings: {
       gecko: {
         id: 'sagabet-livestats@kjartan',
-        strict_min_version: '128.0',
+        strict_min_version: '140.0',
         update_url: UPDATE_URL,
         data_collection_permissions: DATA_COLLECTION,
       },
@@ -56,7 +60,7 @@ const targets = {
     browser_specific_settings: {
       gecko: {
         id: 'sagabet-livestats@kjartan',
-        strict_min_version: '115.0',
+        strict_min_version: '140.0',
         update_url: UPDATE_URL,
         data_collection_permissions: DATA_COLLECTION,
       },

@@ -116,17 +116,18 @@ npm run lint
 ```
 
 Runs Mozilla's own `addons-linter` the way AMO validates a **self-distributed** add-on.
-Expect **0 errors**. Two warnings are known and accepted:
+Expect **0 errors**. One warning is known and accepted:
 
 - **`MANIFEST_UPDATE_URL` is an error in *listed* mode, not here.** AMO forbids `update_url`
   on catalogue-hosted add-ons because it handles updates itself; self-distribution requires
   it. If you ever switch to listed, that key must come out. Always lint with
   `--self-hosted`, or you'll be chasing an error that doesn't apply.
-- **Two `KEY_FIREFOX_UNSUPPORTED_BY_MIN_VERSION` warnings.** `data_collection_permissions`
-  is only understood from Firefox 140, and `strict_min_version` here is 115. Raising the
-  minimum would silence both, at the cost of locking out ESR and any Firefox fork on an
-  older base — including, potentially, the Zen build someone is already running. Older
-  Firefox simply ignores the key, so the warnings are the cheaper side of that trade.
+- **`KEY_FIREFOX_ANDROID_UNSUPPORTED_BY_MIN_VERSION`.** `data_collection_permissions` is
+  understood from Firefox 140 on desktop but only from 142 on Android, and
+  `strict_min_version` is 140. Raising it to 142 would clear the warning at the cost of
+  locking out Firefox ESR 140. Since the add-on declares no `gecko_android` support and has
+  never been tested on mobile, the desktop floor is the one that matters.
+
 AMO's submission checklist calls `UNSAFE_VAR_ASSIGNMENT` a rejection risk, so the dynamic
 `import()` it referred to is gone: the content script is bundled with esbuild, unminified,
 and the manifest no longer needs `web_accessible_resources` at all.

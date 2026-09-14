@@ -1,6 +1,6 @@
 {
   "name": "sagabet-livestats",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Browser extension adding live match statistics to epicbet's placed-bets view",
   "type": "module",
