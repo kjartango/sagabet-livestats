@@ -41,15 +41,31 @@ function token() {
 
 const base = `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(GUID)}`;
 const listing = JSON.parse(await readFile(path.join(root, 'listing.json'), 'utf8'));
+const screenshotOnly = process.argv.includes('--screenshot-only');
 
 // ---- the text fields -------------------------------------------------------
+// privacy_policy is deliberately absent: AMO's v5 API does not expose it as a
+// writable field (only the read-only has_privacy_policy flag), so sending it
+// is accepted and silently discarded. It must be pasted into the Developer Hub
+// by hand — see the reminder printed at the end of this script.
 const payload = {
   homepage: { [LOCALE]: listing.homepage },
   support_url: { [LOCALE]: listing.support_url },
   description: { [LOCALE]: listing.description },
-  privacy_policy: { [LOCALE]: listing.privacy_policy },
   tags: listing.tags,
 };
+
+async function currentListing() {
+  const r = await fetch(`${base}/`, { headers: { Authorization: `JWT ${token()}` } });
+  if (!r.ok) { console.error(`GET failed: HTTP ${r.status}`); process.exit(1); }
+  return r.json();
+}
+
+if (screenshotOnly) {
+  const current = await currentListing();
+  await uploadScreenshot(current);
+  process.exit(0);
+}
 
 console.log('Updating listing fields…');
 const res = await fetch(`${base}/`, {
@@ -66,39 +82,48 @@ if (!res.ok) {
 const updated = await res.json();
 const t = (v) => (v && typeof v === 'object' ? (v[LOCALE] ?? Object.values(v)[0]) : v);
 console.log(`  description    ${String(t(updated.description) || '').length} chars`);
-console.log(`  privacy_policy ${String(t(updated.privacy_policy) || '').length} chars`);
+console.log(`  privacy policy ${updated.has_privacy_policy ? 'set' : 'NOT SET — must be pasted in the Developer Hub'}`);
 console.log(`  homepage       ${t(updated.homepage?.url) || 'MISSING'}`);
 console.log(`  support_url    ${t(updated.support_url?.url) || 'MISSING'}`);
 console.log(`  tags           ${JSON.stringify(updated.tags)}`);
 
 // ---- the screenshot --------------------------------------------------------
-if (!listing.screenshot) process.exit(0);
+await uploadScreenshot(updated);
 
-const existing = updated.previews || [];
-if (existing.length) {
-  console.log(`\n${existing.length} screenshot(s) already attached — skipping upload.`);
-  console.log('Delete them in the Developer Hub first if you want to replace them.');
-  process.exit(0);
+if (!updated.has_privacy_policy) {
+  console.log('\nSTILL TO DO BY HAND: the privacy policy.');
+  console.log('AMO does not expose it to the API. Paste the text from LISTING.md into');
+  console.log('Developer Hub -> Edit Product Page -> Privacy Policy.');
 }
 
-const file = path.join(root, listing.screenshot.file);
-const bytes = await readFile(file);
-console.log(`\nUploading ${listing.screenshot.file} (${bytes.length} bytes)…`);
+async function uploadScreenshot(addon) {
+  if (!listing.screenshot) return;
 
-const form = new FormData();
-form.append('image', new Blob([bytes], { type: 'image/png' }), path.basename(file));
-form.append('caption', JSON.stringify({ [LOCALE]: listing.screenshot.caption }));
-form.append('position', '0');
+  const existing = addon.previews || [];
+  if (existing.length) {
+    console.log(`\n${existing.length} screenshot(s) already attached — skipping upload.`);
+    return;
+  }
 
-const up = await fetch(`${base}/previews/`, {
-  method: 'POST',
-  headers: { Authorization: `JWT ${token()}` },
-  body: form,
-});
-if (!up.ok) {
-  console.error(`Screenshot upload failed: HTTP ${up.status}\n${(await up.text()).slice(0, 600)}`);
-  console.error('\nThe text fields were updated. Add the screenshot in the Developer Hub if this keeps failing.');
-  process.exit(1);
+  const file = path.join(root, listing.screenshot.file);
+  const bytes = await readFile(file);
+  console.log(`\nUploading ${listing.screenshot.file} (${bytes.length} bytes)…`);
+
+  const form = new FormData();
+  form.append('image', new Blob([bytes], { type: 'image/png' }), path.basename(file));
+  form.append('caption', JSON.stringify({ [LOCALE]: listing.screenshot.caption }));
+  form.append('position', '0');
+
+  const up = await fetch(`${base}/previews/`, {
+    method: 'POST',
+    headers: { Authorization: `JWT ${token()}` },
+    body: form,
+  });
+  if (!up.ok) {
+    console.error(`Screenshot upload failed: HTTP ${up.status}\n${(await up.text()).slice(0, 400)}`);
+    console.error('Retry just this step with: npm run update-listing -- --screenshot-only');
+    return;
+  }
+  const preview = await up.json();
+  console.log(`  uploaded, preview id ${preview.id}`);
 }
-const preview = await up.json();
-console.log(`  uploaded, preview id ${preview.id}`);

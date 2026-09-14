@@ -98,8 +98,12 @@ than mislabelled. Retrieve the current list with an OPTIONS request against
 
 ## Privacy policy
 
-AMO asks for one whenever an extension touches user data. It doesn't collect any, but
-saying so explicitly is better than leaving the field empty:
+**Must be pasted in by hand.** AMO's v5 API does not expose `privacy_policy` as a writable
+field — only a read-only `has_privacy_policy` flag — so a PATCH containing it is accepted
+and silently discarded. `npm run update-listing` therefore does not send it, and warns if
+it is still unset.
+
+Developer Hub → the add-on → **Edit Product Page** → *Privacy Policy*:
 
 ```
 SagaBet Live Stats collects no personal data.
