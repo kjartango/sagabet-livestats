@@ -141,9 +141,18 @@ Currently self-distributed. To be findable by searching addons.mozilla.org inste
 npm run lint:listed     # addons-linter in listed mode — expect 0 errors
 ```
 
-Upload `dist/sagabet-livestats-firefox-listed.xpi`, which is the same extension without
-`update_url`. AMO rejects that key on listed add-ons because it delivers updates itself;
-`updates.json` and the release-asset step become redundant.
+```bash
+npm run sign:listed     # uploads dist/firefox-listed to the listed channel
+```
+
+That build is the same extension without `update_url`. AMO rejects that key on listed
+add-ons because it delivers updates itself; `updates.json` and the release-asset step
+become redundant for anyone who installs from the catalogue.
+
+Unlike unlisted signing, this does **not** return a file in minutes — it enters Mozilla's
+review queue. The add-on only becomes publicly visible once a reviewer approves it, and the
+listing metadata in [LISTING.md](LISTING.md) has to be filled in on the Developer Hub
+before it can be published.
 
 [LISTING.md](LISTING.md) holds the store copy: summary, description, categories, privacy
 policy and reviewer notes.
@@ -151,9 +160,15 @@ policy and reviewer notes.
 Two things to know before starting:
 
 - **An add-on's distribution channel is set on AMO, not here.** This repo can produce both
-  builds, but whether an existing unlisted add-on can be converted, or whether a listed
-  submission has to start as a separate entry, is a question for the Developer Hub. Check
-  before uploading — a second entry would need a different add-on id.
+  builds, but whether an existing unlisted add-on can take a listed version, or whether a
+  listed submission has to start as a separate entry, is a question for the Developer Hub.
+  Check before uploading — a second entry would need a different add-on id, which would
+  break auto-updates for anyone already installed.
+- **Version numbers are shared across both channels.** A version consumed by a listed
+  submission cannot be reused for a self-distributed one, and vice versa. Running both
+  channels long-term also means two update paths: existing GitHub installs carry
+  `update_url` and keep updating from the release page regardless of what the catalogue
+  says. Pick one channel as primary rather than maintaining both indefinitely.
 - **Listed means human review.** Expect attention on three points: the extension operates
   on a gambling site, it reads undocumented third-party statistics endpoints, and its
   listing describes another company's product. None breaches Mozilla's policies; all three

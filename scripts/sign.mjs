@@ -16,9 +16,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE = path.join(root, 'dist/firefox-mv2');
+
+// Which channel to submit to. The two use different builds: the listed one has
+// no update_url, because AMO delivers updates for catalogue add-ons itself and
+// rejects the key outright.
+const listed = process.argv.includes('--listed');
+const CHANNEL = listed ? 'listed' : 'unlisted';
+const SOURCE = path.join(root, listed ? 'dist/firefox-listed' : 'dist/firefox-mv2');
 const ARTIFACTS = path.join(root, 'dist/web-ext-artifacts');
-const FINAL = path.join(root, 'dist/sagabet-livestats-firefox-mv2.xpi');
+const FINAL = path.join(root, `dist/sagabet-livestats-firefox-${listed ? 'listed' : 'mv2'}.xpi`);
 
 // A .env is convenient and easy to leak; it is in .gitignore for a reason.
 try {
@@ -57,7 +63,10 @@ if (pkg.version !== manifest.version) {
   process.exit(1);
 }
 
-console.log(`Signing v${pkg.version} as an unlisted (self-distributed) add-on…`);
+console.log(listed
+  ? `Submitting v${pkg.version} to the LISTED channel — this enters Mozilla's review queue`
+  + '\n and, once approved, is publicly visible on addons.mozilla.org.'
+  : `Signing v${pkg.version} as an unlisted (self-distributed) add-on…`);
 await rm(ARTIFACTS, { recursive: true, force: true });
 await mkdir(ARTIFACTS, { recursive: true });
 
@@ -66,7 +75,7 @@ try {
     '--no-install', 'web-ext', 'sign',
     '--source-dir', SOURCE,
     '--artifacts-dir', ARTIFACTS,
-    '--channel', 'unlisted',
+    '--channel', CHANNEL,
     '--api-key', issuer,
     '--api-secret', secret,
   ], { cwd: root, stdio: 'inherit' });
