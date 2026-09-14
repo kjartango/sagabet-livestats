@@ -11,8 +11,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const run = (cmd, args, opts = {}) =>
-  execFileSync(cmd, args, { cwd: root, encoding: 'utf8', ...opts }).trim();
+// execFileSync returns null when stdio is inherited, so callers that only want
+// the exit status must not be handed a string.
+const run = (cmd, args, opts = {}) => {
+  const out = execFileSync(cmd, args, { cwd: root, encoding: 'utf8', ...opts });
+  return typeof out === 'string' ? out.trim() : '';
+};
 
 const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const tag = `v${pkg.version}`;
