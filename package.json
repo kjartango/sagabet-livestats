@@ -15,7 +15,8 @@
     "lint": "npm run build >/dev/null && npx --yes addons-linter --self-hosted dist/firefox-mv2",
     "sign": "npm run build >/dev/null && node scripts/sign.mjs",
     "release": "node scripts/release.mjs",
-    "lint:listed": "npm run build >/dev/null && npx --yes addons-linter dist/firefox-listed"
+    "lint:listed": "npm run build >/dev/null && npx --yes addons-linter dist/firefox-listed",
+    "fetch-signed": "node scripts/fetch-signed.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
