@@ -74,9 +74,19 @@ This is set in `amo-metadata.json`, which the listed submission passes to the AP
 
 ## Tags
 
-```
-sports, football, soccer, statistics, live scores, betting
-```
+**None.** AMO's tags are a fixed vocabulary of 42 values, not free text, and there is no
+sports, football or statistics tag among them:
+
+> ad blocker, anti malware, anti tracker, antivirus, chat, container, content blocker,
+> coupon, dailymotion, dark mode, dndbeyond, download, facebook, google, image search, mp3,
+> music, password manager, pinterest, pixiv, privacy, reddit, roblox, scholar, search,
+> security, shopping, social media, streaming, torrent, translate, twitch, twitter, user
+> scripts, video converter, video downloader, vpn, wayback machine, whatsapp, word counter,
+> youtube, zoom
+
+Nothing there describes a live sports-statistics overlay, so the field is left empty rather
+than mislabelled. Retrieve the current list with an OPTIONS request against
+`/api/v5/addons/addon/<guid>/`.
 
 ## Support
 
@@ -107,13 +117,15 @@ Contact: https://github.com/kjartango/sagabet-livestats/issues
 
 ## Screenshots
 
-`docs/screenshot-firefox.png` — the extension running on two live matches.
-
-Caption:
+`docs/screenshot-firefox.png` — the extension running on two live matches. Uploaded by
+`npm run update-listing`, with this caption:
 
 ```
 Live statistics under each bet, with the per-player table available on any match in play.
 ```
+
+The script skips the upload if any screenshot is already attached, so it never duplicates
+them; remove the existing one in the Developer Hub first to replace it.
 
 **More would help.** AMO allows several, and a listing with one screenshot looks thin.
 Worth capturing, all with stakes and account details cropped or blurred:
@@ -137,6 +149,16 @@ The extension is read-only with respect to the site: it never places, modifies o
 ```
 
 ---
+
+## Applying this listing
+
+```bash
+npm run update-listing
+```
+
+Pushes `listing.json` (description, privacy policy, homepage, support URL, tags) to AMO and
+uploads the screenshot. **AMO throttles listing writes** — roughly one burst per 25 minutes
+— so a 429 means wait, not that something is wrong.
 
 ## Before submitting
 
