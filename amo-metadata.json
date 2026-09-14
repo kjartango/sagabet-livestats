@@ -1,0 +1,7 @@
+{
+  "_comment": "Passed to AMO's API by `npm run sign:listed` via web-ext --amo-metadata. Listed versions must declare a licence and at least one category. The rest of the listing (description, screenshots, privacy policy) is filled in on the Developer Hub — see LISTING.md.",
+  "categories": ["alerts-updates"],
+  "version": {
+    "license": "MIT"
+  }
+}

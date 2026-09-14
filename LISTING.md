@@ -59,8 +59,18 @@ Source code and issue tracker: https://github.com/kjartango/sagabet-livestats
 
 ## Categories
 
-- **Sports & News** (primary)
-- Other suggestion if a second is allowed: *Web Development* is wrong; leave a single category rather than padding.
+```
+alerts-updates
+```
+
+**Alerts & Updates.** AMO has no sports category — the full list for Firefox extensions is
+feeds-news-blogging, web-development, download-management, privacy-security, search-tools,
+appearance, bookmarks, language-support, photos-music-videos, social-communication,
+alerts-updates, other, tabs, shopping, games-entertainment.
+
+*Alerts & Updates* is the closest honest fit: the extension surfaces live-updating
+information on a page. *Games & Entertainment* and *Other* are defensible alternatives.
+This is set in `amo-metadata.json`, which the listed submission passes to the API.
 
 ## Tags
 

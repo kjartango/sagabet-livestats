@@ -76,6 +76,9 @@ try {
     '--source-dir', SOURCE,
     '--artifacts-dir', ARTIFACTS,
     '--channel', CHANNEL,
+    // Listed versions must declare a licence; AMO rejects the submission
+    // outright without one.
+    ...(listed ? ['--amo-metadata', path.join(root, 'amo-metadata.json')] : []),
     '--api-key', issuer,
     '--api-secret', secret,
   ], { cwd: root, stdio: 'inherit' });
