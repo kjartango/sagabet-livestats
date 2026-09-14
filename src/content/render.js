@@ -122,13 +122,42 @@ td.zero { opacity: .3; }
 .card { margin-left: 3px; font-size: 9px; }
 `;
 
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---------------------------------------------------------------------------
+// Everything below builds real DOM nodes rather than HTML strings. Team and
+// player names arrive from a third-party API and market text is scraped off
+// epicbet, so nothing here should ever be parsed as markup — textContent means
+// it cannot be, regardless of what those sources return.
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = String(text);
+  return node;
 }
 
+/** A labelled pill. `label` is optional; `title` becomes the tooltip. */
 function chip(label, value, cls = '', title = '') {
-  const t = title ? ` title="${esc(title)}"` : '';
-  return `<span class="chip ${cls}"${t}>${label ? `<span class="k">${esc(label)}</span>` : ''}<span class="v">${esc(value)}</span></span>`;
+  const node = el('span', `chip ${cls}`.trim());
+  if (title) node.title = title;
+  if (label) node.append(el('span', 'k', label));
+  node.append(el('span', 'v', value));
+  return node;
+}
+
+function pair(stats, key) {
+  const h = stats?.home?.[key];
+  const a = stats?.away?.[key];
+  if (h == null && a == null) return null;
+  return `${h ?? '–'}–${a ?? '–'}`;
+}
+
+function shotsTotal(side) {
+  if (!side) return null;
+  if (side.shots_total != null) return side.shots_total;
+  const { shots_on: on, shots_off: off, shots_blocked: blocked } = side;
+  if (on == null && off == null) return null;
+  return (on || 0) + (off || 0) + (blocked || 0);
 }
 
 // ------------------------------------------------------------ totals chip --
@@ -142,17 +171,19 @@ const TOTALS_MARKETS = [
   { re: /offside/i, label: 'Offsides', keys: ['offsides'] },
 ];
 
-/** The over/under line from the pick, e.g. "Yfir 32.5" -> 32.5. Number only, so
- *  it works whatever language the site is set to. */
+/**
+ * The over/under line from the pick, e.g. "Yfir 32.5" -> 32.5. Only the number
+ * is read, so it works whatever language the site is set to.
+ */
 function betLine(pick) {
   const m = String(pick || '').match(/(\d+(?:[.,]\d+)?)/);
   return m ? Number(m[1].replace(',', '.')) : null;
 }
 
 function totalsChip(team, bet) {
-  if (!bet?.market || !team) return '';
+  if (!bet?.market || !team) return null;
   const spec = TOTALS_MARKETS.find((t) => t.re.test(bet.market));
-  if (!spec) return '';
+  if (!spec) return null;
 
   let total = null;
   for (const key of spec.keys) {
@@ -160,7 +191,7 @@ function totalsChip(team, bet) {
     if (!s) continue;
     total = (total || 0) + (s.home || 0) + (s.away || 0);
   }
-  if (total == null) return '';
+  if (total == null) return null;
 
   const line = betLine(bet.pick);
   return chip(
@@ -175,10 +206,14 @@ function totalsChip(team, bet) {
 
 function teamChips(data, team, keys) {
   const out = [];
-  const min = data.elapsed != null
+
+  const minute = data.elapsed != null
     ? `${data.elapsed}${data.extra ? `+${data.extra}` : ''}'`
     : (data.status || 'LIVE');
-  out.push(`<span class="chip live"><span class="dot"></span>${esc(min)}</span>`);
+  const live = el('span', 'chip live');
+  live.append(el('span', 'dot'), document.createTextNode(minute));
+  out.push(live);
+
   out.push(chip('', `${data.goals.home} – ${data.goals.away}`, 'score headline'));
 
   for (const key of keys) {
@@ -187,42 +222,66 @@ function teamChips(data, team, keys) {
     const h = s.homeText ?? s.home;
     const a = s.awayText ?? s.away;
     if (h == null && a == null) continue;
-    if (key === 'yellow' && !s.home && !s.away) continue; // no cards yet: skip
-    out.push(chip(TEAM_LABELS[key] || key, `${h ?? '–'}–${a ?? '–'}`));
+    if (key === 'yellow' && !s.home && !s.away) continue; // no cards yet
+    out.push(chip(s.label || key, `${h ?? '–'}–${a ?? '–'}`));
   }
   return out;
 }
 
 // ----------------------------------------------------------- player table --
 
-function playerRows(players, keys) {
+function playerRow(p, keys) {
+  const tr = el('tr');
+  const name = el('td');
+  name.append(el('span', 'shirt', p.shirt ?? ''), document.createTextNode(` ${p.name}`));
+  if (p.cards === 'red') name.append(el('span', 'card', '🟥'));
+  else if (p.cards === 'yellow') name.append(el('span', 'card', '🟨'));
+  tr.append(name);
+
+  for (const k of keys) {
+    const v = p.stats[k];
+    tr.append(el('td', v == null || v === 0 ? 'zero' : '', v == null ? '–' : v));
+  }
+  return tr;
+}
+
+function sideTable(name, players, keys) {
+  const side = el('div', 'side');
+  side.append(el('h4', '', name));
+
+  const table = el('table');
+  const headRow = el('tr');
+  headRow.append(el('th', '', 'Player'));
+  for (const k of keys) {
+    const th = el('th', '', PLAYER_SHORT[k] || k);
+    th.title = PLAYER_LABELS[k] || k;
+    headRow.append(th);
+  }
+  const thead = el('thead');
+  thead.append(headRow);
+
+  const tbody = el('tbody');
   const sorted = [...players]
     .filter((p) => p.played || Object.keys(p.stats).length)
     .sort((a, b) => (b.stats[keys[0]] ?? -1) - (a.stats[keys[0]] ?? -1));
+  for (const p of sorted) tbody.append(playerRow(p, keys));
 
-  return sorted.map((p) => {
-    const card = p.cards === 'red' ? '<span class="card">🟥</span>'
-      : p.cards === 'yellow' ? '<span class="card">🟨</span>' : '';
-    const cells = keys.map((k) => {
-      const v = p.stats[k];
-      const cls = v == null || v === 0 ? ' class="zero"' : '';
-      return `<td${cls}>${v == null ? '–' : esc(v)}</td>`;
-    }).join('');
-    return `<tr><td><span class="shirt">${p.shirt ?? ''}</span> ${esc(p.name)}${card}</td>${cells}</tr>`;
-  }).join('');
+  table.append(thead, tbody);
+  side.append(table);
+  return side;
 }
 
 function playerTable(data, detail, keys) {
+  const wrap = el('div', 'players');
   if (!detail?.players) {
-    return `<div class="players"><span class="chip muted">No player data published for this match yet</span></div>`;
+    wrap.append(chip('', 'No player data published for this match yet', 'muted'));
+    return wrap;
   }
-  const head = `<tr><th>Player</th>${keys.map((k) => `<th title="${esc(PLAYER_LABELS[k] || k)}">${esc(PLAYER_SHORT[k] || k)}</th>`).join('')}</tr>`;
-  const side = (name, players) => `
-    <div class="side">
-      <h4>${esc(name)}</h4>
-      <table><thead>${head}</thead><tbody>${playerRows(players, keys)}</tbody></table>
-    </div>`;
-  return `<div class="players">${side(data.home.name, detail.players.home)}${side(data.away.name, detail.players.away)}</div>`;
+  wrap.append(
+    sideTable(data.home.name, detail.players.home, keys),
+    sideTable(data.away.name, detail.players.away, keys),
+  );
+  return wrap;
 }
 
 // ------------------------------------------------------------------- host --
@@ -236,12 +295,12 @@ function ensureHost(anchor) {
   const shadow = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = CSS;
-  const wrap = document.createElement('div');
-  wrap.className = 'wrap';
+  const wrap = el('div', 'wrap');
   shadow.append(style, wrap);
 
-  // Expanding the player table must survive the 30s repaint, so the open set is
-  // keyed by bet and the strip is simply re-rendered from its last arguments.
+  // Expanding the player table must survive the repaint on each poll, so the
+  // open set is keyed by bet and the strip is re-rendered from its last
+  // arguments.
   shadow.addEventListener('click', (e) => {
     const toggle = e.target.closest?.('[data-toggle]');
     if (!toggle) return;
@@ -258,9 +317,25 @@ function ensureHost(anchor) {
   return host;
 }
 
-function paint(anchor, html) {
+/**
+ * Swap in a new strip. Repainting only when the visible text changed keeps the
+ * player table's scroll position while a match ticks over.
+ */
+function paint(anchor, nodes) {
   const wrap = ensureHost(anchor).shadowRoot.querySelector('.wrap');
-  if (wrap.innerHTML !== html) wrap.innerHTML = html;
+  const frag = document.createDocumentFragment();
+  frag.append(...nodes);
+
+  const sig = frag.textContent;
+  if (wrap.dataset.sig === sig && wrap.childNodes.length) return;
+  wrap.dataset.sig = sig;
+  wrap.replaceChildren(frag);
+}
+
+function chipRow(...chips) {
+  const row = el('div', 'chips');
+  row.append(...chips.filter(Boolean));
+  return row;
 }
 
 /** Render one bet's stats, or an explanation of why there are none. */
@@ -275,17 +350,16 @@ export function renderStats(anchor, data, detail, settings, bet) {
   if (data.state === 'no-live-match') {
     const bits = [chip('', 'No live stats for this match', 'muted')];
     if (data.closest) {
-      const pct = Math.round(data.closest.score * 100);
       bits.push(chip(
         'closest',
-        `${data.closest.home} v ${data.closest.away} · ${pct}%`,
+        `${data.closest.home} v ${data.closest.away} · ${Math.round(data.closest.score * 100)}%`,
         'muted',
         `Nearest fixture in ${data.providerLabel}'s live list, too different to be trusted as a match`
         + (data.closest.league ? ` — ${data.closest.league}` : ''),
       ));
     }
     bits.push(chip('', `${data.providerLabel || 'provider'} · ${data.searched ?? 0} live searched`, 'teams'));
-    paint(anchor, `<div class="chips">${bits.join('')}</div>`);
+    paint(anchor, [chipRow(...bits)]);
     return;
   }
 
@@ -293,6 +367,7 @@ export function renderStats(anchor, data, detail, settings, bet) {
     clearFrom(anchor);
     return;
   }
+
   const host = ensureHost(anchor);
   const key = bet?.key || data.fixtureId;
   host._els = { data, detail, settings, bet, key };
@@ -300,21 +375,22 @@ export function renderStats(anchor, data, detail, settings, bet) {
   const team = detail?.team || {};
   const isOpen = expanded.has(key);
 
-  const chips = [
-    totalsChip(team, bet),
-    ...teamChips(data, team, settings.teamStats),
-  ].filter(Boolean);
+  const chips = [totalsChip(team, bet), ...teamChips(data, team, settings.teamStats)];
 
   if (settings.showPlayers) {
-    // Count players who have actually taken the pitch, not the whole squad list.
+    // Count players who have taken the pitch, not the whole squad list.
     const onPitch = detail?.players
       ? [...detail.players.home, ...detail.players.away].filter((p) => p.played).length
       : 0;
-    chips.push(
-      `<button class="chip" data-toggle="players" type="button">`
-      + `<span class="k">Players</span><span class="v">${onPitch || '–'}</span>`
-      + `<span class="caret">${isOpen ? '▲' : '▼'}</span></button>`,
+    const button = el('button', 'chip');
+    button.type = 'button';
+    button.dataset.toggle = 'players';
+    button.append(
+      el('span', 'k', 'Players'),
+      el('span', 'v', onPitch || '–'),
+      el('span', 'caret', isOpen ? '▲' : '▼'),
     );
+    chips.push(button);
   }
 
   chips.push(chip(
@@ -326,18 +402,18 @@ export function renderStats(anchor, data, detail, settings, bet) {
 
   if (detail?.error) chips.push(chip('', detail.error, 'err'));
 
-  const body = `<div class="chips">${chips.join('')}</div>`
-    + (isOpen && settings.showPlayers ? playerTable(data, detail, settings.playerStats) : '');
-  paint(anchor, body);
+  const out = [chipRow(...chips)];
+  if (isOpen && settings.showPlayers) out.push(playerTable(data, detail, settings.playerStats));
+  paint(anchor, out);
 }
 
 export function renderError(anchor, message) {
-  paint(anchor, `<div class="chips">${chip('', message, 'err')}</div>`);
+  paint(anchor, [chipRow(chip('', message, 'err'))]);
 }
 
 export function renderLoading(anchor) {
   const wrap = ensureHost(anchor).shadowRoot.querySelector('.wrap');
-  if (!wrap.innerHTML) wrap.innerHTML = `<div class="chips">${chip('', 'Loading live stats…', 'muted')}</div>`;
+  if (!wrap.childNodes.length) paint(anchor, [chipRow(chip('', 'Loading live stats…', 'muted'))]);
 }
 
 export function clearFrom(anchor) {
@@ -347,5 +423,5 @@ export function clearFrom(anchor) {
 }
 
 export function clearAll() {
-  document.querySelectorAll(`.${HOST_CLASS}, .${MARKER_CLASS}`).forEach((el) => el.remove());
+  document.querySelectorAll(`.${HOST_CLASS}, .${MARKER_CLASS}`).forEach((el2) => el2.remove());
 }

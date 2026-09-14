@@ -12,6 +12,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // handles updates for listed add-ons, so a listed submission must NOT carry
 // this key — see RELEASING.md.
 const UPDATE_URL = 'https://raw.githubusercontent.com/kjartango/sagabet-livestats/main/updates.json';
+
+// Firefox requires every new extension to declare what user data it collects.
+// This one collects none: settings stay in local storage and nothing about the
+// user is transmitted anywhere. "none" cannot be combined with other values.
+const DATA_COLLECTION = { required: ['none'] };
 const SRC = path.join(root, 'src');
 const DIST = path.join(root, 'dist');
 
@@ -27,6 +32,7 @@ const targets = {
         id: 'sagabet-livestats@kjartan',
         strict_min_version: '128.0',
         update_url: UPDATE_URL,
+        data_collection_permissions: DATA_COLLECTION,
       },
     },
   }),
@@ -53,6 +59,7 @@ const targets = {
         id: 'sagabet-livestats@kjartan',
         strict_min_version: '115.0',
         update_url: UPDATE_URL,
+        data_collection_permissions: DATA_COLLECTION,
       },
     },
   }),

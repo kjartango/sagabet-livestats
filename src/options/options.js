@@ -6,6 +6,13 @@ import { PROVIDERS } from '../background/providers.js';
 const $ = (id) => document.getElementById(id);
 let settings = { ...DEFAULTS };
 
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = String(text);
+  return node;
+}
+
 /** Checkbox grid over a stat vocabulary; selection is kept in canonical order. */
 function statPicker(containerId, vocabulary, settingKey) {
   const chosen = new Set(settings[settingKey]);
@@ -16,19 +23,28 @@ function statPicker(containerId, vocabulary, settingKey) {
     groups.get(g).push(s);
   }
 
-  $(containerId).innerHTML = [...groups.entries()].map(([group, items]) => `
-    ${group ? `<h3>${group}</h3>` : ''}
-    <div class="grid">
-      ${items.map((s) => `
-        <label>
-          <input type="checkbox" data-key="${s.key}" ${chosen.has(s.key) ? 'checked' : ''}>
-          <span>${s.label}</span>
-        </label>`).join('')}
-    </div>`).join('');
+  const container = $(containerId);
+  const frag = document.createDocumentFragment();
 
-  for (const box of $(containerId).querySelectorAll('input')) {
+  for (const [group, items] of groups) {
+    if (group) frag.append(el('h3', '', group));
+    const grid = el('div', 'grid');
+    for (const s of items) {
+      const label = el('label');
+      const box = el('input');
+      box.type = 'checkbox';
+      box.dataset.key = s.key;
+      box.checked = chosen.has(s.key);
+      label.append(box, el('span', '', s.label));
+      grid.append(label);
+    }
+    frag.append(grid);
+  }
+  container.replaceChildren(frag);
+
+  for (const box of container.querySelectorAll('input')) {
     box.addEventListener('change', () => {
-      const picked = new Set([...$(containerId).querySelectorAll('input:checked')].map((b) => b.dataset.key));
+      const picked = new Set([...container.querySelectorAll('input:checked')].map((b) => b.dataset.key));
       persist({ [settingKey]: vocabulary.map((s) => s.key).filter((k) => picked.has(k)) });
     });
   }
@@ -62,8 +78,11 @@ function updateBudgetHint() {
 async function init() {
   settings = await loadSettings();
 
-  $('provider').innerHTML = Object.values(PROVIDERS)
-    .map((p) => `<option value="${p.id}">${p.label}</option>`).join('');
+  $('provider').replaceChildren(...Object.values(PROVIDERS).map((p) => {
+    const opt = el('option', '', p.label);
+    opt.value = p.id;
+    return opt;
+  }));
   $('provider').value = settings.provider;
   $('apiKey').value = settings.apiKey;
   $('apiHost').value = settings.apiHost;

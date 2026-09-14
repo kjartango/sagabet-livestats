@@ -97,3 +97,32 @@ instructions: on Firefox, MV3 host permissions are opt-in, so users must additio
 `about:addons` → the extension → **Permissions** and grant access to epicbet.com,
 api.sofascore.com and www.fotmob.com. Until they do, the extension installs cleanly and does
 nothing.
+
+## Validating before you upload
+
+```bash
+npm run lint
+```
+
+Runs Mozilla's own `addons-linter` the way AMO validates a **self-distributed** add-on.
+Expect **0 errors**. Three warnings are known and accepted:
+
+- **`MANIFEST_UPDATE_URL` is an error in *listed* mode, not here.** AMO forbids `update_url`
+  on catalogue-hosted add-ons because it handles updates itself; self-distribution requires
+  it. If you ever switch to listed, that key must come out. Always lint with
+  `--self-hosted`, or you'll be chasing an error that doesn't apply.
+- **Two `KEY_FIREFOX_UNSUPPORTED_BY_MIN_VERSION` warnings.** `data_collection_permissions`
+  is only understood from Firefox 140, and `strict_min_version` here is 115. Raising the
+  minimum would silence both, at the cost of locking out ESR and any Firefox fork on an
+  older base — including, potentially, the Zen build someone is already running. Older
+  Firefox simply ignores the key, so the warnings are the cheaper side of that trade.
+- **One `UNSAFE_VAR_ASSIGNMENT`** for the dynamic `import()` in `content/loader.js`. Content
+  scripts can't be declared as modules, so the entry point is loaded via
+  `import(runtime.getURL(...))`. The argument comes from the extension's own runtime, never
+  from page content. The alternative is introducing a bundler, which would mean the code
+  shipped no longer matches the code in this repo — a worse trade for a reviewer and for
+  anyone reading the source.
+
+There are no `innerHTML` assignments anywhere in the extension; every node is built with
+`createElement`/`textContent`, because team and player names come from third-party APIs and
+market text is scraped from epicbet.

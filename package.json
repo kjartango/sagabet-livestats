@@ -11,7 +11,8 @@
     "build:safari": "node scripts/build.mjs safari",
     "zip": "npm run build",
     "test": "node scripts/test-matcher.mjs && node scripts/test-extract.mjs && node scripts/test-normalize.mjs && node scripts/test-render.mjs",
-    "check:live": "bash scripts/check-live.sh"
+    "check:live": "bash scripts/check-live.sh",
+    "lint": "npm run build >/dev/null && npx --yes addons-linter --self-hosted dist/firefox-mv2"
   },
   "devDependencies": {
     "linkedom": "^0.18.13"
